@@ -37,14 +37,15 @@ class SachsWolfeMap(object):
     This class can then also generate simple local type non-Gaussian maps 
     (fNL, gNL etc) for the Sachs Wolfe case.
     """
-    def __init__(self, fnl=100, gnl=1.0E6, LMAX=100, NSIDE=64, readGmap=-1):
+    def __init__(self, fnl=100, gnl=1.0E6, LMAX=100, NSIDE=64, readGmap=-1, nodipole=False):
         self.gausmap=None
         self.fnl=fnl
         self.gnl=gnl
         self.fnlmap=None
         self.gnlmap=None
-        self.lmax=LMAX
+        self.lmax=LMAX  # this is the lmax to compute Ais and As; for mapmaking use 3*lmax
         self.NSIDE=NSIDE
+        self.nodipole=nodipole
         self.get_SWCls()
         #self.inputCls=np.array([self.Cl(i) for i in range(LMAX)])
         
@@ -57,6 +58,7 @@ class SachsWolfeMap(object):
         self.gausmap=hp.synfast(self.inputCls, nside=self.NSIDE)
     
     def save_gaus_map(self, mapN):
+        print "writing "+str(mapN)
         hp.write_map("maps/gmap_"+str(mapN)+".fits", self.gausmap)
     
     def generate_fnl_map(self):
@@ -71,8 +73,11 @@ class SachsWolfeMap(object):
         with amplitude Asq and Saches Wolfe effect only
         Asq=amplitude of fluctuations in curvature perturbation R
         """
-        self.inputCls=np.array([Asq*2.0*np.pi/(25.0*l*(l+1)) for l in range(1, self.lmax)])
+        self.inputCls=np.array([Asq*2.0*np.pi/(25.0*l*(l+1)) for l in range(1, self.lmax*3)])
         self.inputCls=np.append(0.0, self.inputCls)
+        
+        if (self.nodipole):
+            self.inputCls[1]=0.0
     
     def calculate(self):
         """

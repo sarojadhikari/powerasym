@@ -5,11 +5,11 @@ from ngsachswolfe import SachsWolfeMap
 NSIMS=10000
 LMAX=100
 NSIDE=64
-datadir="data/"
-NODIPOLE=False
+datadir="datanodipole/"
+NODIPOLE=True
 
-fNL=250
-gNL=2500000
+fNL=500
+gNL=5000000
 
 #usesavedmaps=False
 usesavedmaps=True
@@ -52,7 +52,7 @@ for sim in range(NSIMS):
         swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE)
     else:
         print "reading map"
-        swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, readGmap=sim)
+        swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, readGmap=sim)
         
     swmap.generate_fnl_map()
     swmap.generate_gnl_map()
@@ -63,8 +63,8 @@ for sim in range(NSIMS):
     dG.append(swmap.gausdipole); dfNL.append(swmap.fnldipole); dgNL.append(swmap.gnldipole)
     ClG.append(swmap.gausCls); ClfNL.append(swmap.fnlCls); ClgNL.append(swmap.gnlCls)
     
-    if not(usesavedmaps):
-        swmap.save_gaus_map(startN+sim)
+    #if not(usesavedmaps):
+        #swmap.save_gaus_map(startN+sim)
 
 # SAVE 
 

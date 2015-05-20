@@ -51,6 +51,9 @@ class SachsWolfeMap(object):
         
         if (readGmap>-1):
             self.gausmap=hp.read_map("maps/gmap_"+str(readGmap)+".fits")
+            if (nodipole):
+                uw=np.array([1.]*len(self.gausmap))
+                self.gausmap=hp.remove_dipole(self.gausmap, uw)
         else:
             self.generate_gaus_map()
     

@@ -22,6 +22,17 @@ def get_hem_Cls(skymap, direction, LMAX=256):
 
     return [Clsp, Clsm]  
 
+def get_A0(Clrealization, Clinput):
+    NCls1=len(Clrealization)
+    NCls2=len(Clinput)
+    if (NCls1!=NCls2):
+        print "different number of Cl values in the two spectra. Please check!"
+    
+    # also do a weighted average 
+    total=np.sum([2*i+1 for i in range(1, NCls1)])
+    A0sum=np.sum([(2*i+1)*(Clrealization[i]/Clinput[i]-1) for i in range(1, NCls1)])
+    return A0sum/total
+
 def weightedA(Clp, Cln):
     ls=range(len(Clp))
     total=np.sum([2*i+1 for i in ls])
@@ -39,7 +50,7 @@ def Ais(map1, LMAX):
     A123=[]
     for direction in dirs:
         Clsp, Clsm = get_hem_Cls(map1, direction, LMAX)
-        A123.append(weightedA(Clsp,Clsm))
+        A123.append(weightedA(Clsp[2:],Clsm[2:]))
         
     return A123
 

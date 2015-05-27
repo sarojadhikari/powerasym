@@ -26,7 +26,7 @@ class SachsWolfeMap(object):
     This class can then also generate simple local type non-Gaussian maps 
     (fNL, gNL etc) for the Sachs Wolfe case.
     """
-    def __init__(self, fnl=100, gnl=1.0E6, LMAX=100, NSIDE=64, N=50, readGmap=-1, nodipole=False):
+    def __init__(self, fnl=100, gnl=1.0E6, LMAX=100, NSIDE=64, N=50, readGmap=-1, nodipole=False, mapsdir="maps/"):
         """
         * LMAX   is the maximum l to be used to compute power asymmetry and other quantities whereas
                  the maps are generated using LMAX*3 multipoles
@@ -41,11 +41,11 @@ class SachsWolfeMap(object):
         self.NSIDE=NSIDE
         self.efolds=N
         self.nodipole=nodipole
+        self.mapsdir=mapsdir
         self.get_SWCls()
-        #self.inputCls=np.array([self.Cl(i) for i in range(LMAX)])
         
         if (readGmap>-1):
-            self.gausmap=hp.read_map("maps/gmap_"+str(readGmap)+".fits")
+            self.gausmap=hp.read_map(self.mapsdir+"gmap_"+str(readGmap)+".fits")
             if (nodipole):
                 uw=np.array([1.]*len(self.gausmap))
                 self.gausmap=hp.remove_dipole(self.gausmap, uw)
@@ -57,7 +57,7 @@ class SachsWolfeMap(object):
     
     def save_gaus_map(self, mapN):
         print "writing "+str(mapN)
-        hp.write_map("maps/gmap_"+str(mapN)+".fits", self.gausmap)
+        hp.write_map(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausmap)
     
     def generate_fnl_map(self):
         self.fnlmap=self.gausmap+3.*self.fnl*self.gausmap*self.gausmap
@@ -105,8 +105,8 @@ class SachsWolfeMap(object):
             
             self.fnlAi=Ais(self.fnlmap/np.sqrt(1+self.fnlA0), self.lmax)
             self.fnlA=AistoA(self.fnlAi)
-            #self.fnlmp=hp.remove_monopole(self.gausmap, fitval=True)[1]
-            #self.gausdipole=get_dipole(self.gausmap)
+            self.fnlmp=hp.remove_monopole(self.fnlmap, fitval=True)[1]
+            self.fnldipole=get_dipole(self.fnlmap)
         
         if (self.gnlmap!=None):
             self.gnlCls=hp.anafast(self.gnlmap, lmax=self.lmax)
@@ -114,29 +114,5 @@ class SachsWolfeMap(object):
             
             self.gnlAi=Ais(self.gnlmap/np.sqrt(1+sself.gnlA0), self.lmax)
             self.gnlA=AistoA(self.gnlAi)
-           
-           
-            """ older
-            self.gausAi=Ais(self.gausmap, self.lmax)
-            self.gausA=AistoA(self.gausAi)
-            self.gausCls=hp.anafast(self.gausmap, lmax=self.lmax)
-            self.gausA0=get_A0(self.gausCls, self.inputCls[:self.lmax+1])
-            self.gausmp=hp.remove_monopole(self.gausmap, fitval=True)[1]
-            self.gausdipole=get_dipole(self.gausmap)
-            """
-        
-        """
-        if (self.fnlmap!=None):
-            self.fnlAi=Ais(self.fnlmap, self.lmax)
-            self.fnlA=AistoA(self.fnlAi)
-            self.fnlCls=hp.anafast(self.fnlmap, lmax=self.lmax)
-            self.fnlA0=get_A0(self.fnlCls, self.inputCls[:self.lmax+1])
-            self.fnldipole=get_dipole(self.fnlmap)
-            
-        if (self.gnlmap!=None):
-            self.gnlAi=Ais(self.gnlmap, self.lmax)
-            self.gnlA=AistoA(self.gnlAi)
-            self.gnlCls=hp.anafast(self.gnlmap, lmax=self.lmax)
-            self.gnlA0=get_A0(self.gnlCls, self.inputCls[:self.lmax+1])
+            self.gnlmp=hp.remove_monopole(self.gnlmap, fitval=True)[1]
             self.gnldipole=get_dipole(self.gnlmap)
-        """

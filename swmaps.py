@@ -6,7 +6,7 @@ from ngsachswolfe import SachsWolfeMap
 NSIMS=5000
 LMAX=100
 NSIDE=64
-NEFOLDS=50
+NEFOLDS=25
 
 mapsdir="maps"+str(NEFOLDS)+"/"
 datadir="data"+str(NEFOLDS)+"/"
@@ -16,10 +16,10 @@ if not os.path.exists(datadir):
 if not os.path.exists(mapsdir):
     os.makedirs(mapsdir)
     
-NODIPOLE=True
+NODIPOLE=False
 
-fNL=500
-gNL=5000000
+fNL=100
+gNL=100000
 
 usesavedmaps=False
 #usesavedmaps=True
@@ -55,7 +55,7 @@ if not(usesavedmaps):
     except:
         print "file read error"
         
-startN=len(ratiosGprev); print startN
+startN=len(AGprev); print startN
 
 A0G=[]; A0fNL=[]; A0gNL=[]
 AG=[]; AfNL=[]; AgNL=[]
@@ -65,10 +65,10 @@ ClG=[]; ClfNL=[]; ClgNL=[]
 
 for sim in range(NSIMS):
     if not(usesavedmaps):
-        swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, mapsdir=mapsdir)
+        swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, mapsdir=mapsdir, N=NEFOLDS)
     else:
         print "reading map"
-        swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, readGmap=sim, mapsdir=mapsdir)
+        swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)
         
     swmap.generate_fnl_map()
     swmap.generate_gnl_map()
@@ -89,7 +89,7 @@ if not(usesavedmaps):
     np.save(datadir+"AdistG.npy", np.append(AGprev, AG))
     np.save(datadir+"AidistG.npy", np.append(AiGprev, AiG))
     np.save(datadir+"dipolesG.npy", np.append(dGprev, dG))
-    np.save(datadir+"ClsG.npy", np.append(ClsGprev, ClsG))
+    np.save(datadir+"ClsG.npy", np.append(ClGprev, ClG))
 
 np.save(datadir+"A0distfNL"+str(fNL)+".npy", np.append(A0fNLprev, A0fNL))
 np.save(datadir+"A0distgNL"+str(gNL)+".npy", np.append(A0gNLprev, A0gNL))

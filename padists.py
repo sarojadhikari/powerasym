@@ -33,24 +33,26 @@ def NtoSTR(num):
     
 
 class PowerAsymmetryDistribution(object):
-    def __init__(self, typ='fNL', datafolder='data', NMAPS=10000, theory=True):
+    def __init__(self, typ='fNL', datafolder='data', NMAPS=10000, efolds=50, theory=True):
         """
         typ specifies where it is fNL or gNL; the gaussian distribution is read in both cases
         """
         self.TYPE=typ
-        self.basedir=datafolder+"/"
+        self.efolds=efolds
+        self.basedir=datafolder+str(efolds)+"/"
         self.fgnls=None
         self.nmaps=NMAPS
         self.read_data()
         self.clrs=['b', 'g', 'r', 'black']
         self.ls=[':', '--', '-', 'o']
         self.theoryplot=theory
-        
+    
     def set_fgnl(self, fgnllist):
         self.fgnls=fgnllist
         
     def read_data(self):
         try:
+            self.gA0=np.load(self.basedir+"A0distG.npy")
             self.gAi=np.load(self.basedir+"AidistG.npy")
             self.NSIMS=len(self.gAi)/3
             self.gA=np.load(self.basedir+"AdistG.npy")
@@ -60,6 +62,7 @@ class PowerAsymmetryDistribution(object):
             sys.exit(1)
         
         if self.fgnls != None:
+            self.fgNLA0=[]
             self.fgNLAi=[]
             self.fgNLA=[]
             self.fgNLCls=[]
@@ -67,19 +70,57 @@ class PowerAsymmetryDistribution(object):
             for fgnl in self.fgnls:
                 if self.TYPE=='fNL':
                     self.TYPELABEL=r'$f_{\rm NL}$'
+                    self.A0const=0.00011257 # to get sigma(A0), multiply by fNL and sqrt(N)
                     self.A1const=0.04621/500.
+                    self.fgNLA0.append(np.load(self.basedir+"A0distfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistfNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLCls.append(np.load(self.basedir+"ClsfNL"+str(fgnl)+".npy")[0:self.nmaps*101].reshape(self.nmaps, 101)) # 101 because the Cls are saved upto LMAX=100
                 elif self.TYPE=='gNL':
+                    self.A0const=2.8075669E-9 # to get A0 multiply by gNL and N^2
                     self.A1const=0.023/5000000.
                     self.TYPELABEL=r'$g_{\rm NL}$'
+                    self.fgNLA0.append(np.load(self.basedir+"A0distgNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistgNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistgNL"+str(fgnl)+".npy")[0:self.nmaps])
                 else:
                     print "type must be fNL or gNL"
                     sys.exit(1)
+
+    def plot_A0(self):
+        plot_hist(plt, self.gA0, clr=self.clrs[0], alp=1.0, ht='step')
+        
+        sG=np.sqrt(np.var(self.gA0))
+        mG=np.mean(self.gA0)
+        amin, amax=plt.xlim()
+        alist=np.arange(3*amin, amax*3, amax/250.)
+        theoryGdist=norm.pdf(alist, loc=mG, scale=sG)
+        plt.plot(alist, theoryGdist, self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"=0")
+        
+        for i in range(len(self.fgnls)):
+            if (self.theoryplot==False):
+                lbl=self.TYPELABEL+"="+NtoSTR(self.fgnls[i])
+            else:
+                lbl=None
+            
+            plot_hist(plt, self.fgNLA0[i], clr=self.clrs[i+1], alp=1.0, labl=lbl, ht='step')
+            amin, amax=plt.xlim()
+            alist=np.arange(3*amin, amax*3, amax/250.)
+            if (self.theoryplot):
+                if (self.TYPE=='fNL'):
+                    theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A0const*self.fgnls[i])**2.0*self.efolds+sG**2.0))
+                if (self.TYPE=='gNL'):
+                    theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A0const*self.fgnls[i])**2.0*self.efolds**2.0+sG**2.0))
                 
+                plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
+            
+        plt.xlabel(r'$A_0$')
+        plt.ylabel(r'$f_{\rm norm}$')
+        plt.yscale('log')
+        plt.ylim(0.01, 100)
+        plt.legend()
+        
+        
     def plot_Ai(self):
         plot_hist(plt, self.gAi, clr=self.clrs[0], alp=ALPHA)
 
@@ -136,6 +177,8 @@ class PowerAsymmetryDistribution(object):
         plt.xlabel(r'$A$')
         plt.ylabel(r'$f_{\rm norm}$')
         plt.legend()
+    
+        
         
     def plot_hist_scatter(self, dist1, dist2, BINS=40, label1=None, label2=None):
         """

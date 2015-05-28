@@ -26,7 +26,7 @@ class SachsWolfeMap(object):
     This class can then also generate simple local type non-Gaussian maps 
     (fNL, gNL etc) for the Sachs Wolfe case.
     """
-    def __init__(self, fnl=100, gnl=1.0E6, LMAX=100, NSIDE=64, N=50, readGmap=-1, nodipole=False, mapsdir="maps/"):
+    def __init__(self, fnl=100, gnl=1.0E5, LMAX=100, NSIDE=64, N=50, readGmap=-1, nodipole=False, mapsdir="maps/"):
         """
         * LMAX   is the maximum l to be used to compute power asymmetry and other quantities whereas
                  the maps are generated using LMAX*3 multipoles
@@ -60,7 +60,9 @@ class SachsWolfeMap(object):
         hp.write_map(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausmap)
     
     def generate_fnl_map(self):
-        self.fnlmap=self.gausmap+3.*self.fnl*self.gausmap*self.gausmap
+        gmapsquared=self.gausmap*self.gausmap
+        var=np.var(gmapsquared)
+        self.fnlmap=self.gausmap+3.*self.fnl*(gmapsquared-var) # later test by subtracting global variance var
         
     def generate_gnl_map(self):
         self.gnlmap=self.gausmap+9.*self.gnl*np.power(self.gausmap, 3.0)
@@ -93,7 +95,6 @@ class SachsWolfeMap(object):
         if (self.gausmap!=None):
             self.gausCls=hp.anafast(self.gausmap, lmax=self.lmax)
             self.gausA0=get_A0(self.gausCls, self.inputCls[:self.lmax+1])
-            
             self.gausAi=Ais(self.gausmap/np.sqrt(1+self.gausA0), self.lmax)
             self.gausA=AistoA(self.gausAi)
             self.gausmp=hp.remove_monopole(self.gausmap, fitval=True)[1]
@@ -112,7 +113,7 @@ class SachsWolfeMap(object):
             self.gnlCls=hp.anafast(self.gnlmap, lmax=self.lmax)
             self.gnlA0=get_A0(self.gnlCls, self.inputCls[:self.lmax+1])
             
-            self.gnlAi=Ais(self.gnlmap/np.sqrt(1+sself.gnlA0), self.lmax)
+            self.gnlAi=Ais(self.gnlmap/np.sqrt(1+self.gnlA0), self.lmax)
             self.gnlA=AistoA(self.gnlAi)
             self.gnlmp=hp.remove_monopole(self.gnlmap, fitval=True)[1]
             self.gnldipole=get_dipole(self.gnlmap)

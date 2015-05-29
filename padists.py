@@ -5,7 +5,7 @@ make meaningful plots
 
 import sys
 import numpy as np
-from scipy.stats import chi, norm
+from scipy.stats import chi, norm, chi2
 import matplotlib.pyplot as plt
 
 import matplotlib
@@ -21,8 +21,8 @@ def plot_hist(pls, data, BINS=40, ht='stepfilled', clr='b', labl="", alp=0.1):
     pls.hist(data, histtype=ht, bins=BINS, normed=True, color=clr, label=labl, linewidth=LW, alpha=alp)
 
 def NtoSTR(num):
-    if (num<10000):
-        return str(num)
+    if (num<100000):
+        return "$"+str(num)+"$"
     else:
         index=int(np.log10(num))
         base=num/np.power(10, index)
@@ -77,7 +77,8 @@ class PowerAsymmetryDistribution(object):
                     self.fgNLA.append(np.load(self.basedir+"AdistfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLCls.append(np.load(self.basedir+"ClsfNL"+str(fgnl)+".npy")[0:self.nmaps*101].reshape(self.nmaps, 101)) # 101 because the Cls are saved upto LMAX=100
                 elif self.TYPE=='gNL':
-                    self.A0const=2.8075669E-9 # to get A0 multiply by gNL and N^2
+                    #self.A0const=3.95E-08
+                    self.A0const=7.47562E-9 # to get scale multiply by gNL^0.5 and N
                     self.A1const=0.023/5000000.
                     self.TYPELABEL=r'$g_{\rm NL}$'
                     self.fgNLA0.append(np.load(self.basedir+"A0distgNL"+str(fgnl)+".npy")[0:self.nmaps])
@@ -95,11 +96,11 @@ class PowerAsymmetryDistribution(object):
         amin, amax=plt.xlim()
         alist=np.arange(3*amin, amax*3, amax/250.)
         theoryGdist=norm.pdf(alist, loc=mG, scale=sG)
-        plt.plot(alist, theoryGdist, self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"=0")
+        plt.plot(alist, theoryGdist, self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"$=0$")
         
         for i in range(len(self.fgnls)):
             if (self.theoryplot==False):
-                lbl=self.TYPELABEL+"="+NtoSTR(self.fgnls[i])
+                lbl=self.TYPELABEL+"$=$"+NtoSTR(self.fgnls[i])
             else:
                 lbl=None
             
@@ -110,8 +111,11 @@ class PowerAsymmetryDistribution(object):
                 if (self.TYPE=='fNL'):
                     theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A0const*self.fgnls[i])**2.0*self.efolds+sG**2.0))
                 if (self.TYPE=='gNL'):
-                    theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A0const*self.fgnls[i])**2.0*self.efolds**2.0+sG**2.0))
-                
+                    scl=self.A0const*self.efolds*self.fgnls[i]
+                    print scl
+                    ngpdf=chi2.pdf(alist, 1, loc=mG, scale=scl)
+                    theorynGdist=ngpdf
+                    
                 plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
             
         plt.xlabel(r'$A_0$')
@@ -184,6 +188,9 @@ class PowerAsymmetryDistribution(object):
         """
         given two list of numbers dist1 and dist2 generate a scatter plot
         and also draw histograms on the two axes
+        =======================================
+        INCOMPLETE: DOES NOT WORK AT THE MOMENT
+        =======================================
         """
         from matplotlib.ticker import NullFormatter
         

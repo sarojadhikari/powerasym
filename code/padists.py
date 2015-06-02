@@ -6,6 +6,8 @@ make meaningful plots
 import sys
 import numpy as np
 from scipy.stats import chi, norm, chi2
+from scipy import integrate
+
 import matplotlib.pyplot as plt
 
 import matplotlib
@@ -78,7 +80,7 @@ class PowerAsymmetryDistribution(object):
                     self.fgNLCls.append(np.load(self.basedir+"ClsfNL"+str(fgnl)+".npy")[0:self.nmaps*101].reshape(self.nmaps, 101)) # 101 because the Cls are saved upto LMAX=100
                 elif self.TYPE=='gNL':
                     #self.A0const=3.95E-08
-                    self.A0const=7.47562E-9 # to get scale multiply by gNL^0.5 and N
+                    self.A0const=(9./25)*2.2E-9 
                     self.A1const=0.023/5000000.
                     self.TYPELABEL=r'$g_{\rm NL}$'
                     self.fgNLA0.append(np.load(self.basedir+"A0distgNL"+str(fgnl)+".npy")[0:self.nmaps])
@@ -87,6 +89,18 @@ class PowerAsymmetryDistribution(object):
                 else:
                     print "type must be fNL or gNL"
                     sys.exit(1)
+
+    def ConvolvedPDF_A0(self, alist, sigma0, sigma):
+        """
+        return the convolution of a normal and chi2 distribution for the total PDF of
+        A0 in a gNL model
+        """
+        fn = lambda y, x, s0, s: norm.pdf(y-x, loc=0.0, scale=s0)*chi2.pdf(y, 1, scale=s)
+        cresult=[]
+        for a in alist:
+            cresult.append(integrate.quad(fn, -np.inf, 0., args=(a, sigma0, sigma,))+integrate.quad(fn, 0., np.inf, args=(a, sigma0, sigma,)))
+        
+        return np.array(cresult)
 
     def plot_A0(self):
         plot_hist(plt, self.gA0, clr=self.clrs[0], alp=1.0, ht='step')
@@ -112,9 +126,8 @@ class PowerAsymmetryDistribution(object):
                     theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A0const*self.fgnls[i])**2.0*self.efolds+sG**2.0))
                 if (self.TYPE=='gNL'):
                     scl=self.A0const*self.efolds*self.fgnls[i]
-                    print scl
-                    ngpdf=chi2.pdf(alist, 1, loc=mG, scale=scl)
-                    theorynGdist=ngpdf
+                    print "integrating to get the convolved PDF for A0.."
+                    theorynGdist=self.ConvolvedPDF_A0(alist, sG, 2*np.sqrt(2*self.fgnls[i]*self.efolds*self.A0const))
                     
                 plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
             

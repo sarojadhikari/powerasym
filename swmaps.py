@@ -6,7 +6,7 @@ from ngsachswolfe import SachsWolfeMap
 NSIMS=5000
 LMAX=100
 NSIDE=64
-NEFOLDS=100
+NEFOLDS=60
 
 mapsdir="maps"+str(NEFOLDS)+"/"
 datadir="data"+str(NEFOLDS)+"/"
@@ -18,8 +18,10 @@ if not os.path.exists(mapsdir):
     
 NODIPOLE=False
 
-fNL=20
-gNL=-500000
+fNL=100
+gNL=50000
+
+# test: 30000 has -3 while 20000 has -6 subtraction in gnl
 
 #usesavedmaps=False
 usesavedmaps=True
@@ -63,15 +65,23 @@ AiG=[]; AifNL=[]; AigNL=[]
 dG=[]; dfNL=[]; dgNL=[]
 ClG=[]; ClfNL=[]; ClgNL=[]
 
+phisq=[]
+# first either generate all the Gaussian maps or get the maps and compute <phi^2>
 for sim in range(NSIMS):
     if not(usesavedmaps):
         swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, mapsdir=mapsdir, N=NEFOLDS)
+        swmap.save_gaus_map(startN+sim)
     else:
-        print "reading map"
         swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)
+    
+    phisq.append(np.var(swmap.gausmap*swmap.gausmap))
         
-    swmap.generate_fnl_map()
-    swmap.generate_gnl_map()
+# now generate non-Gaussian maps
+for sim in range(NSIMS):
+    swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)
+        
+    swmap.generate_fnl_map(np.mean(phisq))
+    swmap.generate_gnl_map(np.mean(phisq))
     swmap.calculate()
     
     A0G.append(swmap.gausA0); A0fNL.append(swmap.fnlA0); A0gNL.append(swmap.gnlA0)
@@ -80,9 +90,6 @@ for sim in range(NSIMS):
     dG.append(swmap.gausdipole); dfNL.append(swmap.fnldipole); dgNL.append(swmap.gnldipole)
     ClG.append(swmap.gausCls); ClfNL.append(swmap.fnlCls); ClgNL.append(swmap.gnlCls)
     
-    if not(usesavedmaps):
-        swmap.save_gaus_map(startN+sim)
-
 # SAVE 
 if not(usesavedmaps):
     np.save(datadir+"A0distG.npy", np.append(A0Gprev, A0G))

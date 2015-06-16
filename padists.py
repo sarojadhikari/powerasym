@@ -16,22 +16,22 @@ matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
 
-ALPHA=0.12
+ALPHA=0.15
 LW=2.0
 
-def plot_hist(pls, data, BINS=40, ht='stepfilled', clr='b', labl="", alp=0.1):
+def plot_hist(pls, data, BINS=30, ht='stepfilled', clr='b', labl="", alp=0.1):
     pls.hist(data, histtype=ht, bins=BINS, normed=True, color=clr, label=labl, linewidth=LW, alpha=alp)
 
 def NtoSTR(num):
-    if (num<100000):
-        return "$"+str(num)+"$"
-    else:
+    if (num>100000 or num<0.00001):
         index=int(np.log10(num))
         base=num/np.power(10, index)
         if base>1:
             return r"${0}\times 10^{1}$".format(base, index)
         else:
             return r"$10^{0}$".format(index)
+    else:
+        return "$"+str(num)+"$"
     
 
 class PowerAsymmetryDistribution(object):
@@ -52,7 +52,7 @@ class PowerAsymmetryDistribution(object):
     def set_fgnl(self, fgnllist):
         self.fgnls=fgnllist
         
-    def read_data(self):
+    def read_data(self, Af=1.):
         try:
             self.gA0=np.load(self.basedir+"A0distG.npy")
             self.gAi=np.load(self.basedir+"AidistG.npy")
@@ -80,12 +80,13 @@ class PowerAsymmetryDistribution(object):
                     self.fgNLCls.append(np.load(self.basedir+"ClsfNL"+str(fgnl)+".npy")[0:self.nmaps*101].reshape(self.nmaps, 101)) # 101 because the Cls are saved upto LMAX=100
                 elif self.TYPE=='gNL':
                     #self.A0const=3.95E-08
-                    self.A0const=(1./125)*2.2E-9 
+                    self.A0const=Af*7.92E-10 # this is A_\phi 
                     self.A1const=0.023/5000000.
                     self.TYPELABEL=r'$g_{\rm NL}$'
                     self.fgNLA0.append(np.load(self.basedir+"A0distgNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistgNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistgNL"+str(fgnl)+".npy")[0:self.nmaps])
+                    self.fgNLCls.append(np.load(self.basedir+"ClsgNL"+str(fgnl)+".npy")[0:self.nmaps*101].reshape(self.nmaps, 101))
                 else:
                     print "type must be fNL or gNL"
                     sys.exit(1)
@@ -103,14 +104,16 @@ class PowerAsymmetryDistribution(object):
         return np.array(cresult)
 
     def plot_A0(self):
-        plot_hist(plt, self.gA0, clr=self.clrs[0], alp=1.0, ht='step')
+        if (self.TYPE!='gNL'):
+            plot_hist(plt, self.gA0, clr=self.clrs[0], alp=ALPHA, ht='stepfilled')
         
         sG=np.sqrt(np.var(self.gA0))
         mG=np.mean(self.gA0)
         amin, amax=plt.xlim()
         alist=np.arange(3*amin, amax*3, amax/250.)
         theoryGdist=norm.pdf(alist, loc=mG, scale=sG)
-        plt.plot(alist, theoryGdist, self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"$=0$")
+        if (self.TYPE!='gNL'):
+            plt.plot(alist, theoryGdist, self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"$=0$")
         
         for i in range(len(self.fgnls)):
             if (self.theoryplot==False):
@@ -118,7 +121,11 @@ class PowerAsymmetryDistribution(object):
             else:
                 lbl=None
             
-            plot_hist(plt, self.fgNLA0[i], clr=self.clrs[i+1], alp=1.0, labl=lbl, ht='step')
+            if (self.TYPE=='fNL'):
+                plot_hist(plt, self.fgNLA0[i], clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
+            if (self.TYPE=='gNL'):
+                plot_hist(plt, self.fgNLA0[i]-self.gA0[:self.nmaps], clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
+                
             amin, amax=plt.xlim()
             alist=np.arange(3*amin, amax*3, amax/250.)
             if (self.theoryplot):
@@ -126,15 +133,21 @@ class PowerAsymmetryDistribution(object):
                     theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A0const*self.fgnls[i])**2.0*self.efolds+sG**2.0))
                 if (self.TYPE=='gNL'):
                     scl=self.A0const*self.efolds*self.fgnls[i]
-                    print "integrating to get the convolved PDF for A0.."
-                    theorynGdist=np.sign(self.fgnls[i])*self.ConvolvedPDF_A0(alist, sG, np.sqrt(2*np.abs(self.fgnls[i])*self.efolds*self.A0const))
+                    theorynGdist=np.sign(self.fgnls[i])*chi2.pdf(alist, 1, scale=np.sqrt(2.*(self.fgnls[i])*self.efolds*self.A0const))
                     
                 plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
             
         plt.xlabel(r'$A_0$')
-        plt.ylabel(r'$f_{\rm norm}$')
+        plt.ylabel(r'$p(A_0)$')
         plt.yscale('log')
-        plt.ylim(0.01, 100)
+        if (self.TYPE=='fNL'):
+            plt.xlim(-1.0, 1.0)
+            plt.ylim(0.1, 100)
+        if (self.TYPE=='gNL'):
+            #plt.xscale('log')
+            plt.ylim(0.4, 400)
+            plt.xlim(0.0, 0.1)
+        
         plt.legend()
         
         
@@ -162,7 +175,7 @@ class PowerAsymmetryDistribution(object):
         
         plt.xlim(-0.15, 0.15)
         plt.xlabel(r'$A_i$')
-        plt.ylabel(r'$f_{\rm norm}$')
+        plt.ylabel(r'$p(A_i)$')
         plt.legend()
         
     def plot_A(self):
@@ -192,48 +205,7 @@ class PowerAsymmetryDistribution(object):
         plt.xlim(0.0, 0.2)
         plt.xticks([0.05, 0.1, 0.15, 0.2])
         plt.xlabel(r'$A$')
-        plt.ylabel(r'$f_{\rm norm}$')
+        plt.ylabel(r'$p(A)$')
         plt.legend()
-    
-        
-        
-    def plot_hist_scatter(self, dist1, dist2, BINS=40, label1=None, label2=None):
-        """
-        given two list of numbers dist1 and dist2 generate a scatter plot
-        and also draw histograms on the two axes
-        =======================================
-        INCOMPLETE: DOES NOT WORK AT THE MOMENT
-        =======================================
-        """
-        from matplotlib.ticker import NullFormatter
-        
-        nullfmt=NullFormatter()
-        
-        left, width = 0.1, 0.65
-        bottom, height = 0.1, 0.65
-        bottom_h = left_h = left+width+0.02
-        
-        rect_scatter = [left, bottom, width, height]
-        rect_histx = [left, bottom_h, width, 0.2]
-        rect_histy = [left_h, bottom, 0.2, height]
-        
-        plt.figure(1)
-        
-        axScatter = plt.axes(rect_scatter)
-        axHistx = plt.axes(rect_histx)
-        axHisty = plt.axes(rect_histy)
-        
-        axHistx.xaxis.set_major_formatter(nullfmt)
-        axHisty.yaxis.set_major_formatter(nullfmt)
-        
-        axScatter.scatter(dist1, dist2, 'bo', alpha=0.12)
-        
-        axHistx.hist(dist1, bins=BINS, histtype='stepfilled', alpha=0.15)
-        axHisty.hist(dist2, bins=BINS, orientation='horizontal', histtype='stepfilled', alpha=0.15)
-        
-        axHistx.set_xlim(axScatter.get_xlim())
-        axHisty.set_ylim(axScatter.get_ylim())
-        
-        plt.show()
         
         

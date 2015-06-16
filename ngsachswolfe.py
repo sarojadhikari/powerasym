@@ -59,13 +59,11 @@ class SachsWolfeMap(object):
         print "writing "+str(mapN)
         hp.write_map(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausmap)
     
-    def generate_fnl_map(self):
-        gmapsquared=self.gausmap*self.gausmap
-        var=np.var(gmapsquared)
-        self.fnlmap=self.gausmap+3.*self.fnl*(gmapsquared-var) # later test by subtracting global variance var
+    def generate_fnl_map(self, phisq=0.):
+        self.fnlmap=self.gausmap+3.*self.fnl*(gmapsquared-phisq) # later test by subtracting global variance var
         
-    def generate_gnl_map(self):
-        self.gnlmap=self.gausmap+9.*self.gnl*np.power(self.gausmap, 3.0)
+    def generate_gnl_map(self, phisq=0.):
+        self.gnlmap=self.gausmap+9.*self.gnl*(np.power(self.gausmap, 3.0)-3*self.gausmap*phisq)
 
     def get_SWCls(self, Asq=2.2e-9):
         """
@@ -73,7 +71,7 @@ class SachsWolfeMap(object):
         with amplitude Asq and Saches Wolfe effect only
         Asq=amplitude of fluctuations in curvature perturbation R
         """
-        self.inputCls=np.array([Asq*2.0*np.pi/(25.0*l*(l+1)) for l in range(1, self.lmax*5)])
+        self.inputCls=np.array([Asq*2.0*np.pi/(25.0*l*(l+1)) for l in range(1, self.lmax*3)])
         if (self.efolds==0):
             C0=0.0
         else:

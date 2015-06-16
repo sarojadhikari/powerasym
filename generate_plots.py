@@ -5,22 +5,34 @@ import numpy as np
 import matplotlib.pyplot as plt
 from padists import PowerAsymmetryDistribution
 
+MAPS=5000
+
 # generate fNLlocal Ai and A plots #
 #----------------------------------#
-pad = PowerAsymmetryDistribution()
+pad = PowerAsymmetryDistribution(NMAPS=MAPS)
 pad.set_fgnl([250, 500]); pad.read_data()
 
 pad.plot_A()
+plt.xlim(0.0, 0.25)
 plt.savefig("plots/Adist.pdf")
 plt.close()
 
 pad.plot_Ai()
+plt.xlim(-0.2, 0.2)
 plt.savefig("plots/Aidist.pdf")
+plt.close()
+
+pad.set_fgnl([100, 250]); pad.read_data()
+plt.figure(num=None, figsize=(8, 5))
+pad.plot_A0()
+plt.xlim(-0.5, 0.5); plt.ylim(0.25, 50);
+plt.title(r"$N="+str(pad.efolds)+"$")
+plt.savefig("plots/A0fNL.pdf")
 plt.close()
 
 # generate fNLlocal nodipole plots #
 #----------------------------------#
-pad = PowerAsymmetryDistribution(datafolder="datanodipole")
+pad = PowerAsymmetryDistribution(datafolder="datanomonopoles/datanodipole", NMAPS=MAPS)
 pad.set_fgnl([500]); pad.read_data()
 
 pad.plot_A()
@@ -33,7 +45,7 @@ plt.close()
 
 # generate gNLlocal plots #
 #-------------------------#
-pad = PowerAsymmetryDistribution(typ='gNL', theory=False)
+pad = PowerAsymmetryDistribution(typ='gNL', theory=False, NMAPS=MAPS)
 pad.set_fgnl([1000000, 5000000, 10000000]); pad.read_data()
 
 pad.plot_A()

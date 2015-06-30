@@ -1,22 +1,25 @@
-# -*- coding: utf-8 -*-
 """
 Created on Fri Apr 10 14:54:45 2015
 
-local non-gaussianity and modulations. simply assume that:
-l(l+1)/2pi C_l = A^2/25 = constant
-A^2(\zeta) =2.2 x 10^{-9}
+local non-gaussianity and modulations. 
+for scale invariant power spectrum with amplitude A (Bardeen potential):
+l(l+1)/2pi C_l = A/9 = constant
+A(\phi) = (3./5)^2 * 2.2 x 10^{-9}   (Planck 2015)
 
-we will always keep the cosmic variance primordial dipole, as we want to study
-statistics related to it.
+The expression for non-scale invariant case is slightly more complicated, but
+mathematica can do the integration; this code uses the output from the 
+mathematica script SachsWolfeCls.nb
 
-keeping or ignoring the monopole is a choice at this stage as local non-g
-only shifts the monopole; we will make it 0 for the local case
+Since we are subsampling a larger universe to CMB skies of the size of our
+observable universe, we need to keep the C_0 and C_1 terms, as we want to
+study possible monopole and dipole modulations.
 
 @author: sarojadhikari
 """
 import numpy as np
 import healpy as hp
 from cmbutils import get_hem_Cls, Ais, AistoA, get_dipole, get_A0
+from scipy.special import gamma, gammaln
 
 class SachsWolfeMap(object):
     """
@@ -30,7 +33,7 @@ class SachsWolfeMap(object):
         """
         * LMAX   is the maximum l to be used to compute power asymmetry and other quantities whereas
                  the maps are generated using LMAX*3 multipoles
-        * N      is the number of efolds assumed for C_0 calculation, if N=0, C0=0.0
+        * N      is the number of extra efolds assumed for C_0 calculation, if N=0, C0=0.0
         """  
         self.gausmap=None
         self.fnl=fnl
@@ -60,23 +63,27 @@ class SachsWolfeMap(object):
         hp.write_map(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausmap)
     
     def generate_fnl_map(self, phisq=0.):
-        self.fnlmap=self.gausmap+3.*self.fnl*(gmapsquared-phisq) # later test by subtracting global variance var
+        self.fnlmap=self.gausmap+3.*self.fnl*(np.power(self.gausmap, 2.0)-phisq)
         
     def generate_gnl_map(self, phisq=0.):
-        self.gnlmap=self.gausmap+9.*self.gnl*(np.power(self.gausmap, 3.0)-3*self.gausmap*phisq)
+        self.gnlmap=self.gausmap+9.*self.gnl*(np.power(self.gausmap, 3.0)-3.0*self.gausmap*phisq)
 
-    def get_SWCls(self, Asq=2.2e-9):
+    def get_SWCls(self, Aphi=7.94E-10, ns=0.965):
         """
         return the Cl value at a multipole assuming scale independent power spectrum
         with amplitude Asq and Saches Wolfe effect only
         Asq=amplitude of fluctuations in curvature perturbation R
         """
-        self.inputCls=np.array([Asq*2.0*np.pi/(25.0*l*(l+1)) for l in range(1, self.lmax*3)])
-        if (self.efolds==0):
-            C0=0.0
+        if (ns==1):
+            self.inputCls=np.array([Aphi*2.0*np.pi/(9.0*l*(l+1)) for l in range(1, self.lmax*3)])
+            C0=4*np.pi*Aphi*self.efolds/9.0
         else:
-            C0=4*np.pi*Asq*self.efolds/25.0
-            
+            k0rcmbfactor=1.2135 #((pi./(rcmb*k0))**(ns-1)
+            nfactor=k0rcmbfactor*4.*np.pi*np.pi*np.power(2.0, ns-4.0)/9.0
+            self.inputCls=np.array([Aphi*nfactor*np.exp(gammaln(l+ns/2.0-0.5)-gammaln(l+5./2-ns/2.0))*gamma(3.0-ns)/np.power(gamma(2.0-ns/2.0), 2.0) for l in range(1, self.lmax*3)])
+            C0factor=k0rcmbfactor*4.*np.pi*Aphi/9.0
+            C0=C0factor*(1.0-np.exp(-(ns-1)*self.efolds))/(ns-1)
+            print C0
         self.inputCls=np.append(C0, self.inputCls)
         
         if (self.nodipole):

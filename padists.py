@@ -59,6 +59,7 @@ class PowerAsymmetryDistribution(object):
             self.NSIMS=len(self.gAi)/3
             self.gA=np.load(self.basedir+"AdistG.npy")
             self.gCls=np.load(self.basedir+"ClsG.npy")[0:self.nmaps*101].reshape(self.nmaps, 101)
+            self.phisq=np.load(self.basedir+"phisq.npy")
         except:
             print "cannot read the asymmetry distribution for the Gaussian case!"
             sys.exit(1)
@@ -72,7 +73,7 @@ class PowerAsymmetryDistribution(object):
             for fgnl in self.fgnls:
                 if self.TYPE=='fNL':
                     self.TYPELABEL=r'$f_{\rm NL}$'
-                    self.A0const=0.00011257 # to get sigma(A0), multiply by fNL and sqrt(N)
+                    self.A0const=7.92E-10 # to get sigma(A0), multiply by fNL and sqrt(N)
                     self.A1const=0.04621/500.
                     self.fgNLA0.append(np.load(self.basedir+"A0distfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistfNL"+str(fgnl)+".npy")[0:3*self.nmaps])
@@ -124,16 +125,23 @@ class PowerAsymmetryDistribution(object):
             if (self.TYPE=='fNL'):
                 plot_hist(plt, self.fgNLA0[i], clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
             if (self.TYPE=='gNL'):
-                plot_hist(plt, self.fgNLA0[i]-self.gA0[:self.nmaps], clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
+                plot_hist(plt, self.fgNLA0[i]-self.gA0+6*self.fgnls[i]*self.efolds*self.A0const-6*self.fgnls[i]*self.phisq, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
                 
             amin, amax=plt.xlim()
             alist=np.arange(3*amin, amax*3, amax/250.)
             if (self.theoryplot):
                 if (self.TYPE=='fNL'):
-                    theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A0const*self.fgnls[i])**2.0*self.efolds+sG**2.0))
+                    theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt(16.*self.A0const*self.efolds*self.fgnls[i]**2.0+sG**2.0))
                 if (self.TYPE=='gNL'):
                     scl=self.A0const*self.efolds*self.fgnls[i]
-                    theorynGdist=np.sign(self.fgnls[i])*chi2.pdf(alist, 1, scale=np.sqrt(2.*(self.fgnls[i])*self.efolds*self.A0const))
+                    theorynGdist=np.sign(self.fgnls[i])*chi2.pdf(alist, 1, scale=6.*self.fgnls[i]*self.efolds*self.A0const)
+                    # new
+                    """
+                    sigmaphi00=np.sqrt(self.A0const*self.efolds)
+                    a0=24.*np.pi*self.fgnls[i]
+                    theorynGdist=1./a0/np.sqrt(2.*np.pi)/sigmaphi00 * np.sqrt(a0/(alist+a0*sigmaphi00^2))*np.exp(-(alist+a0*sigmaphi00**2.0)/(2.*a0*sigmaphi00**2.0))
+                    self.theorynGdist=theorynGdist
+                    """
                     
                 plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
             
@@ -145,17 +153,17 @@ class PowerAsymmetryDistribution(object):
             plt.ylim(0.1, 100)
         if (self.TYPE=='gNL'):
             #plt.xscale('log')
-            plt.ylim(0.4, 400)
-            plt.xlim(0.0, 0.1)
+            plt.ylim(0.4, 500)
+            plt.xlim(-0.008, 0.03)
         
         plt.legend()
         
         
     def plot_Ai(self):
-        plot_hist(plt, self.gAi, clr=self.clrs[0], alp=ALPHA)
+        plot_hist(plt, self.gAi.flatten(), clr=self.clrs[0], alp=ALPHA)
 
-        sG=np.sqrt(np.var(self.gAi))
-        mG=np.mean(self.gAi)
+        sG=np.sqrt(np.var(self.gAi.flatten()))
+        mG=np.mean(self.gAi.flatten())
         amin, amax = plt.xlim()
         alist=np.arange(2*amin, amax*2, amax/250.)
         theoryGdist=norm.pdf(alist, loc=mG, scale=sG)
@@ -167,7 +175,7 @@ class PowerAsymmetryDistribution(object):
             else:
                 lbl=None
                 
-            plot_hist(plt, self.fgNLAi[i], clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
+            plot_hist(plt, self.fgNLAi[i].flatten(), clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
             
             if (self.theoryplot):
                 theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A1const*self.fgnls[i])**2.0+sG**2.0))

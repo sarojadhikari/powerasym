@@ -36,7 +36,7 @@ def get_A0(Clrealization, Clinput):
 def weightedA(Clp, Cln):
     ls=range(len(Clp))
     total=np.sum([2*i+1 for i in ls])
-    num=np.sum([(2*i+1)*(2*(Clp[i]-Cln[i])/(Clp[i]+Cln[i])) for i in ls])
+    num=np.sum([(2*i+1)*((Clp[i]-Cln[i])/(Clp[i]+Cln[i])) for i in ls])
     return num/total
 
 def Ais(map1, LMAX):

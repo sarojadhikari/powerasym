@@ -78,6 +78,7 @@ class SachsWolfeMap(object):
             self.inputCls=np.array([Aphi*2.0*np.pi/(9.0*l*(l+1)) for l in range(1, self.lmax*3)])
             C0=4*np.pi*Aphi*self.efolds/9.0
         else:
+            print ns
             k0rcmbfactor=1.2135 #((pi./(rcmb*k0))**(ns-1)
             nfactor=k0rcmbfactor*4.*np.pi*np.pi*np.power(2.0, ns-4.0)/9.0
             self.inputCls=np.array([Aphi*nfactor*np.exp(gammaln(l+ns/2.0-0.5)-gammaln(l+5./2-ns/2.0))*gamma(3.0-ns)/np.power(gamma(2.0-ns/2.0), 2.0) for l in range(1, self.lmax*3)])
@@ -100,7 +101,7 @@ class SachsWolfeMap(object):
         if (self.gausmap!=None):
             self.gausCls=hp.anafast(self.gausmap, lmax=self.lmax)
             self.gausA0=get_A0(self.gausCls, self.inputCls[:self.lmax+1])
-            self.gausAi=Ais(self.gausmap/np.sqrt(1+self.gausA0), self.lmax)
+            self.gausAi=Ais(self.gausmap, self.lmax)
             self.gausA=AistoA(self.gausAi)
             self.gausmp=hp.remove_monopole(self.gausmap, fitval=True)[1]
             self.gausdipole=get_dipole(self.gausmap)
@@ -109,7 +110,7 @@ class SachsWolfeMap(object):
             self.fnlCls=hp.anafast(self.fnlmap, lmax=self.lmax)
             self.fnlA0=get_A0(self.fnlCls, self.inputCls[:self.lmax+1])
             
-            self.fnlAi=Ais(self.fnlmap/np.sqrt(1+self.fnlA0), self.lmax)
+            self.fnlAi=Ais(self.fnlmap, self.lmax)
             self.fnlA=AistoA(self.fnlAi)
             self.fnlmp=hp.remove_monopole(self.fnlmap, fitval=True)[1]
             self.fnldipole=get_dipole(self.fnlmap)
@@ -118,7 +119,7 @@ class SachsWolfeMap(object):
             self.gnlCls=hp.anafast(self.gnlmap, lmax=self.lmax)
             self.gnlA0=get_A0(self.gnlCls, self.inputCls[:self.lmax+1])
             
-            self.gnlAi=Ais(self.gnlmap/np.sqrt(1+self.gnlA0), self.lmax)
+            self.gnlAi=Ais(self.gnlmap, self.lmax)
             self.gnlA=AistoA(self.gnlAi)
             self.gnlmp=hp.remove_monopole(self.gnlmap, fitval=True)[1]
             self.gnldipole=get_dipole(self.gnlmap)

@@ -4,10 +4,10 @@ import numpy as np
 import healpy as hp
 from ngsachswolfe import SachsWolfeMap
 
-NSIMS=10000
+NSIMS=2000
 LMAX=100
 NSIDE=64
-NEFOLDS=50  #
+NEFOLDS=40  #
 
 mapsdir="maps"+str(NEFOLDS)+"/"
 datadir="data"+str(NEFOLDS)+"/"
@@ -19,7 +19,7 @@ if not os.path.exists(mapsdir):
     
 NODIPOLE=False
 
-fNL=100
+fNL=300
 gNL=10000
 
 # test: 30000 has -3 while 20000 has -6 subtraction in gnl
@@ -54,8 +54,8 @@ phisqsub=np.mean(phisq) # global
 for sim in range(NSIMS):
     swmap=SachsWolfeMap(fnl=fNL, gnl=gNL, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)
     
-    swmap.generate_fnl_map(phisqsub)
-    swmap.generate_gnl_map(phisqsub)
+    swmap.generate_fnl_map(phisq[sim])
+    swmap.generate_gnl_map(phisq[sim])
     swmap.calculate()
     
     A0G.append(swmap.gausA0); A0fNL.append(swmap.fnlA0); A0gNL.append(swmap.gnlA0)

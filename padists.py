@@ -35,12 +35,13 @@ def NtoSTR(num):
     
 
 class PowerAsymmetryDistribution(object):
-    def __init__(self, typ='fNL', datafolder='data', NMAPS=10000, efolds=50, theory=True):
+    def __init__(self, typ='fNL', datafolder='data', NMAPS=10000, efolds=50, ns=0.965, theory=True):
         """
         typ specifies where it is fNL or gNL; the gaussian distribution is read in both cases
         """
         self.TYPE=typ
         self.efolds=efolds
+        self.ns=ns
         self.basedir=datafolder+str(efolds)+"/"
         self.fgnls=None
         self.nmaps=NMAPS
@@ -59,7 +60,7 @@ class PowerAsymmetryDistribution(object):
             self.NSIMS=len(self.gAi)/3
             self.gA=np.load(self.basedir+"AdistG.npy")
             self.gCls=np.load(self.basedir+"ClsG.npy")[0:self.nmaps*101].reshape(self.nmaps, 101)
-            self.phisq=np.load(self.basedir+"phisq.npy")
+            #self.phisq=np.load(self.basedir+"phisq.npy")
         except:
             print "cannot read the asymmetry distribution for the Gaussian case!"
             sys.exit(1)
@@ -73,15 +74,16 @@ class PowerAsymmetryDistribution(object):
             for fgnl in self.fgnls:
                 if self.TYPE=='fNL':
                     self.TYPELABEL=r'$f_{\rm NL}$'
-                    self.A0const=7.92E-10 # to get sigma(A0), multiply by fNL and sqrt(N)
-                    self.A1const=0.04621/500.
+                    self.A0const=7.94E-10 # to get sigma(A0), multiply by fNL and sqrt(N)
+                    #self.A1const=0.04621/500./2.0   # for ns=1.0
+                    self.A1const=0.0258/500. # for ns=0.965
                     self.fgNLA0.append(np.load(self.basedir+"A0distfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistfNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLCls.append(np.load(self.basedir+"ClsfNL"+str(fgnl)+".npy")[0:self.nmaps*101].reshape(self.nmaps, 101)) # 101 because the Cls are saved upto LMAX=100
                 elif self.TYPE=='gNL':
                     #self.A0const=3.95E-08
-                    self.A0const=Af*7.92E-10 # this is A_\phi 
+                    self.A0const=Af*7.94E-10 # this is A_\phi 
                     self.A1const=0.023/5000000.
                     self.TYPELABEL=r'$g_{\rm NL}$'
                     self.fgNLA0.append(np.load(self.basedir+"A0distgNL"+str(fgnl)+".npy")[0:self.nmaps])
@@ -106,7 +108,7 @@ class PowerAsymmetryDistribution(object):
 
     def plot_A0(self):
         if (self.TYPE!='gNL'):
-            plot_hist(plt, self.gA0, clr=self.clrs[0], alp=ALPHA, ht='stepfilled')
+            plot_hist(plt, self.gA0, clr=self.clrs[0], alp=ALPHA, ht='step')
         
         sG=np.sqrt(np.var(self.gA0))
         mG=np.mean(self.gA0)
@@ -123,9 +125,12 @@ class PowerAsymmetryDistribution(object):
                 lbl=None
             
             if (self.TYPE=='fNL'):
-                plot_hist(plt, self.fgNLA0[i], clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
+                plot_hist(plt, self.fgNLA0[i], BINS=30, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='step')
             if (self.TYPE=='gNL'):
-                plot_hist(plt, self.fgNLA0[i]-self.gA0+6*self.fgnls[i]*self.efolds*self.A0const-6*self.fgnls[i]*self.phisq, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
+                #plot_hist(plt, self.fgNLA0[i]-self.gA0+6*self.fgnls[i]*self.efolds*self.A0const-6*self.fgnls[i]*self.phisq, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
+                neg=np.min(self.fgNLA0[i]-self.gA0)
+                scl=6.0*self.A0const*((1.0-np.exp(-(self.ns-1)*self.efolds))/(self.ns-1.0))*self.fgnls[i]
+                plot_hist(plt, (self.fgNLA0[i]-self.gA0-neg)/scl, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
                 
             amin, amax=plt.xlim()
             alist=np.arange(3*amin, amax*3, amax/250.)
@@ -133,8 +138,9 @@ class PowerAsymmetryDistribution(object):
                 if (self.TYPE=='fNL'):
                     theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt(16.*self.A0const*self.efolds*self.fgnls[i]**2.0+sG**2.0))
                 if (self.TYPE=='gNL'):
-                    scl=self.A0const*self.efolds*self.fgnls[i]
-                    theorynGdist=np.sign(self.fgnls[i])*chi2.pdf(alist, 1, scale=6.*self.fgnls[i]*self.efolds*self.A0const)
+                    scl=2.0*self.A0const*((1.0-np.exp(-(self.ns-1)*self.efolds))/(self.ns-1.0))*self.fgnls[i]
+                    #scl=2.0*self.A0const*self.efolds*self.fgnls[i]
+                    theorynGdist=np.sign(self.fgnls[i])*chi2.pdf(alist,1, scale=1)
                     # new
                     """
                     sigmaphi00=np.sqrt(self.A0const*self.efolds)
@@ -153,8 +159,8 @@ class PowerAsymmetryDistribution(object):
             plt.ylim(0.1, 100)
         if (self.TYPE=='gNL'):
             #plt.xscale('log')
-            plt.ylim(0.4, 500)
-            plt.xlim(-0.008, 0.03)
+            plt.ylim(0.01, 20)
+            plt.xlim(-0.02, 0.25)
         
         plt.legend()
         

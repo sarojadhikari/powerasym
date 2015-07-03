@@ -14,6 +14,7 @@ def get_hem_Cls(skymap, direction, LMAX=256):
     maskp=np.array([0.]*NPIX)
     disc=hp.query_disc(nside=NSIDE, vec=direction, radius=0.0174532925*90.)
     maskp[disc]=1.
+    #skymap=hp.remove_monopole(skymap)
     map1=hp.ma(skymap)
     map1.mask=maskp
     Clsp=hp.anafast(map1, lmax=LMAX)
@@ -36,7 +37,7 @@ def get_A0(Clrealization, Clinput):
 def weightedA(Clp, Cln):
     ls=range(len(Clp))
     total=np.sum([2*i+1 for i in ls])
-    num=np.sum([(2*i+1)*((Clp[i]-Cln[i])/(Clp[i]+Cln[i])) for i in ls])
+    num=np.sum([(2*i+1)*(Clp[i]-Cln[i])/(Clp[i]+Cln[i]) for i in ls])
     return num/total
 
 def Ais(map1, LMAX):

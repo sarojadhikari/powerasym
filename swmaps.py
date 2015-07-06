@@ -4,10 +4,10 @@ import numpy as np
 import healpy as hp
 from ngsachswolfe import SachsWolfeMap
 
-NSIMS=100
+NSIMS=10000
 LMAX=100
 NSIDE=64
-NEFOLDS=20  #
+NEFOLDS=50  #
 
 mapsdir="maps"+str(NEFOLDS)+"/"
 datadir="data"+str(NEFOLDS)+"/"
@@ -20,7 +20,7 @@ if not os.path.exists(mapsdir):
 NODIPOLE=False
 
 fNL=250
-gNL=10000
+gNL=50000
 
 usesavedmaps=True
 #usesavedmaps=False
@@ -77,15 +77,15 @@ for sim in range(NSIMS):
     Cl1G.append(swmap.gausCls1); Cl1fNL.append(swmap.fnlCls1); Cl1gNL.append(swmap.gnlCls1)
     
 # SAVE 
-if not(usesavedmaps):
-    np.save(datadir+"A0distG.npy", A0G)
-    np.save(datadir+"AdistG.npy", AG)
-    np.save(datadir+"AidistG.npy", AiG)
-    np.save(datadir+"Ai2distG.npy", Ai2G) #
-    np.save(datadir+"A2distG.npy", A2G) #
-    np.save(datadir+"dipolesG.npy", dG)
-    np.save(datadir+"Cls0G.npy", Cl0G)
-    np.save(datadir+"Cls1G.npy", Cl1G)
+np.save(datadir+"A0distG.npy", A0G)
+np.save(datadir+"AdistG.npy", AG)
+np.save(datadir+"AidistG.npy", AiG)
+np.save(datadir+"Ai2distG.npy", Ai2G) #
+np.save(datadir+"A2distG.npy", A2G) #
+np.save(datadir+"dipolesG.npy", dG)
+
+np.save(datadir+"Cls0G.npy", Cl0G)
+np.save(datadir+"Cls1G.npy", Cl1G)
 
 np.save(datadir+"A0distfNL"+str(fNL)+".npy", A0fNL)
 np.save(datadir+"A0distgNL"+str(gNL)+".npy", A0gNL)

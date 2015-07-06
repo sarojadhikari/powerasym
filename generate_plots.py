@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from padists import PowerAsymmetryDistribution
 
-MAPS=5000
+MAPS=10000
 
 # generate fNLlocal Ai and A plots #
 #----------------------------------#
@@ -13,43 +13,44 @@ pad = PowerAsymmetryDistribution(NMAPS=MAPS)
 pad.set_fgnl([250, 500]); pad.read_data()
 
 pad.plot_A()
-plt.xlim(0.0, 0.25)
+plt.xlim(0.0, 0.12)
 plt.savefig("plots/Adist.pdf")
 plt.close()
 
 pad.plot_Ai()
-plt.xlim(-0.2, 0.2)
+plt.xlim(-0.08, 0.08)
 plt.savefig("plots/Aidist.pdf")
 plt.close()
 
 pad.set_fgnl([100, 250]); pad.read_data()
 plt.figure(num=None, figsize=(8, 5))
 pad.plot_A0()
-plt.xlim(-0.5, 0.5); plt.ylim(0.25, 50);
+plt.xlim(-0.75, 0.75); plt.ylim(0.1, 50);
 plt.title(r"$N="+str(pad.efolds)+"$")
 plt.savefig("plots/A0fNL.pdf")
 plt.close()
 
 # generate fNLlocal nodipole plots #
 #----------------------------------#
-pad = PowerAsymmetryDistribution(datafolder="datanomonopoles/datanodipole", NMAPS=MAPS)
-pad.set_fgnl([500]); pad.read_data()
+#pad = PowerAsymmetryDistribution(datafolder="datanomonopoles/datanodipole", NMAPS=MAPS)
+#pad.set_fgnl([500]); pad.read_data()
 
-pad.plot_A()
-plt.savefig("plots/Anodipole.pdf")
-plt.close()
+#pad.plot_A()
+#plt.savefig("plots/Anodipole.pdf")
+#plt.close()
 
-pad.plot_Ai()
-plt.savefig("plots/Ainodipole.pdf")
-plt.close()
+#pad.plot_Ai()
+#plt.savefig("plots/Ainodipole.pdf")
+#plt.close()
 
 # generate gNLlocal plots #
 #-------------------------#
-pad = PowerAsymmetryDistribution(typ='gNL', theory=False, NMAPS=MAPS)
-pad.set_fgnl([1000000, 5000000, 10000000]); pad.read_data()
+pad = PowerAsymmetryDistribution(typ='gNL', theory=True, NMAPS=MAPS)
+pad.set_fgnl([10000, 100000]); pad.read_data()
 
-pad.plot_A()
-plt.savefig("plots/AgNLdist.pdf")
+pad.plot_A0()
+plt.xlim(-0.01, 0.75)
+plt.savefig("plots/A0gNLdist.pdf")
 plt.close()
 
 # generate C_1-A correlation #

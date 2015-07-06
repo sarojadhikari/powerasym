@@ -19,7 +19,7 @@ matplotlib.rcParams.update({'xtick.major.pad': 7})
 ALPHA=0.15
 LW=2.0
 
-def plot_hist(pls, data, BINS=30, ht='stepfilled', clr='b', labl="", alp=0.1):
+def plot_hist(pls, data, BINS=50, ht='stepfilled', clr='b', labl="", alp=0.1):
     pls.hist(data, histtype=ht, bins=BINS, normed=True, color=clr, label=labl, linewidth=LW, alpha=alp)
 
 def NtoSTR(num):
@@ -57,7 +57,7 @@ class PowerAsymmetryDistribution(object):
     def set_fgnl(self, fgnllist):
         self.fgnls=fgnllist
         
-    def read_data(self, Af=1.):
+    def read_data(self):
         try:
             self.gA0=np.load(self.basedir+"A0distG.npy")
             self.gAi=np.load(self.basedir+"AidistG.npy")
@@ -87,7 +87,7 @@ class PowerAsymmetryDistribution(object):
                     #self.fgNLCls.append(np.load(self.basedir+"ClsfNL"+str(fgnl)+".npy")[0:self.nmaps*101].reshape(self.nmaps, 101)) # 101 because the Cls are saved upto LMAX=100
                 elif self.TYPE=='gNL':
                     #self.A0const=3.95E-08
-                    self.A0const=Af*7.94E-10 # this is A_\phi 
+                    self.A0const=7.94E-10 # this is A_\phi 
                     self.A1const=0.023/5000000.
                     self.TYPELABEL=r'$g_{\rm NL}$'
                     self.fgNLA0.append(np.load(self.basedir+"A0distgNL"+str(fgnl)+".npy")[0:self.nmaps])
@@ -129,12 +129,13 @@ class PowerAsymmetryDistribution(object):
                 lbl=None
             
             if (self.TYPE=='fNL'):
-                plot_hist(plt, self.fgNLA0[i], BINS=30, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='step')
+                plot_hist(plt, self.fgNLA0[i], BINS=30, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
             if (self.TYPE=='gNL'):
                 #plot_hist(plt, self.fgNLA0[i]-self.gA0+6*self.fgnls[i]*self.efolds*self.A0const-6*self.fgnls[i]*self.phisq, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
                 neg=np.min(self.fgNLA0[i]-self.gA0)
-                scl=6.0*self.A0const*self.Nconst*self.fgnls[i]
-                plot_hist(plt, (self.fgNLA0[i]-self.gA0-neg)/scl, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
+                const=9*6.*self.fgnls[i]*1.5E-8
+                #scl=6.0*self.A0const*self.Nconst*self.fgnls[i]
+                plot_hist(plt, (self.fgNLA0[i]-self.gA0+const)/(1-9.*3.*self.fgnls[i]*1.5E-8), clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
                 
             amin, amax=plt.xlim()
             alist=np.arange(3*amin, amax*3, amax/250.)
@@ -142,9 +143,9 @@ class PowerAsymmetryDistribution(object):
                 if (self.TYPE=='fNL'):
                     theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt(16.*self.A0const*self.Nconst*self.fgnls[i]**2.0+sG**2.0))
                 if (self.TYPE=='gNL'):
-                    scl=2.0*self.A0const*self.Nconst*self.fgnls[i]
+                    scl=6.0*self.A0const*self.Nconst*self.fgnls[i]
                     #scl=2.0*self.A0const*self.efolds*self.fgnls[i]
-                    theorynGdist=np.sign(self.fgnls[i])*chi2.pdf(alist,1, scale=1)
+                    theorynGdist=np.sign(self.fgnls[i])*chi2.pdf(alist,1, scale=scl)
                     # new
                     """
                     sigmaphi00=np.sqrt(self.A0const*self.efolds)
@@ -163,7 +164,7 @@ class PowerAsymmetryDistribution(object):
             plt.ylim(0.1, 100)
         if (self.TYPE=='gNL'):
             #plt.xscale('log')
-            plt.ylim(0.01, 20)
+            plt.ylim(0.05, 1000)
             plt.xlim(-0.02, 0.25)
         
         plt.legend()

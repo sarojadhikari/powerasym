@@ -18,7 +18,7 @@ study possible monopole and dipole modulations.
 import numpy as np
 import healpy as hp
 from cmbutils import get_hem_Cls, Ais, AistoA, get_dipole, get_A0
-from scipy.special import gamma, gammaln
+from scipy.special import gamma, gammaln    #gammaln useful for large l, gamma(l) is too large
 
 class SachsWolfeMap(object):
     """
@@ -100,6 +100,7 @@ class SachsWolfeMap(object):
         """
         if (self.gausmap0!=None):
             self.gausCls0=hp.anafast(self.gausmap0, lmax=self.lmax)
+            self.gausCls1=hp.anafast(self.gausmap1, lmax=self.lmax)
             self.gausA0=get_A0(self.gausCls0, self.inputCls[:self.lmax+1])
             self.gausAi=Ais(self.gausmap1, self.lmax); self.gausA=AistoA(self.gausAi)
             self.gausAi2=Ais(self.gausmap0, self.lmax); self.gausA2=AistoA(self.gausAi2)
@@ -108,6 +109,7 @@ class SachsWolfeMap(object):
             
         if (self.fnlmap0!=None):
             self.fnlCls0=hp.anafast(self.fnlmap0, lmax=self.lmax)
+            self.fnlCls1=hp.anafast(self.fnlmap1, lmax=self.lmax)
             self.fnlA0=get_A0(self.fnlCls0, self.inputCls[:self.lmax+1])
             self.fnlAi=Ais(self.fnlmap1, self.lmax); self.fnlA=AistoA(self.fnlAi)
             self.fnlAi2=Ais(self.fnlmap0, self.lmax); self.fnlA2=AistoA(self.fnlAi2) 
@@ -116,6 +118,7 @@ class SachsWolfeMap(object):
         
         if (self.gnlmap0!=None):
             self.gnlCls0=hp.anafast(self.gnlmap0, lmax=self.lmax)
+            self.gnlCls1=hp.anafast(self.gnlmap1, lmax=self.lmax)
             self.gnlA0=get_A0(self.gnlCls0, self.inputCls[:self.lmax+1])
             self.gnlAi=Ais(self.gnlmap1, self.lmax); self.gnlA=AistoA(self.gnlAi)
             self.gnlAi2=Ais(self.gnlmap0, self.lmax); self.gnlA2=AistoA(self.gnlAi2)

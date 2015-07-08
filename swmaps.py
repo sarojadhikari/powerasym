@@ -19,8 +19,8 @@ if not os.path.exists(mapsdir):
     
 NODIPOLE=False
 
-fNL=250
-gNL=50000
+fNL=10
+gNL=5000000
 
 usesavedmaps=True
 #usesavedmaps=False

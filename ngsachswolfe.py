@@ -54,6 +54,12 @@ class SachsWolfeMap(object):
             self.gausalm0=hp.read_alm(self.mapsdir+"gmap_"+str(readGmap)+".fits")
             
         self.gausalm1=np.copy(self.gausalm0); self.gausalm1[0]=0.0
+        if (self.nodipole):
+            ndxfl=np.ones(len(self.inputCls))
+            ndxfl[1]=0.0
+            hp.almxfl(self.gausalm1, ndxfl, inplace=True)
+            hp.almxfl(self.gausalm0, ndxfl, inplace=True)
+            
         self.gausmap0=hp.alm2map(self.gausalm0, nside=self.NSIDE) # includes the monopole bit
         self.gausmap1=hp.alm2map(self.gausalm1, nside=self.NSIDE) # does not include the monopole
     
@@ -98,10 +104,12 @@ class SachsWolfeMap(object):
         * Cls
         * dipoles using remove_dipole
         """
+        inpCls=self.inputCls[:self.lmax+1]
+        
         if (self.gausmap0!=None):
             self.gausCls0=hp.anafast(self.gausmap0, lmax=self.lmax)
             self.gausCls1=hp.anafast(self.gausmap1, lmax=self.lmax)
-            self.gausA0=get_A0(self.gausCls0, self.inputCls[:self.lmax+1])
+            self.gausA0=get_A0(self.gausCls0, inpCls)
             self.gausAi=Ais(self.gausmap1, self.lmax); self.gausA=AistoA(self.gausAi)
             self.gausAi2=Ais(self.gausmap0, self.lmax); self.gausA2=AistoA(self.gausAi2)
             self.gausmp=hp.remove_monopole(self.gausmap0, fitval=True)[1]
@@ -110,7 +118,7 @@ class SachsWolfeMap(object):
         if (self.fnlmap0!=None):
             self.fnlCls0=hp.anafast(self.fnlmap0, lmax=self.lmax)
             self.fnlCls1=hp.anafast(self.fnlmap1, lmax=self.lmax)
-            self.fnlA0=get_A0(self.fnlCls0, self.inputCls[:self.lmax+1])
+            self.fnlA0=get_A0(self.fnlCls0, inpCls)
             self.fnlAi=Ais(self.fnlmap1, self.lmax); self.fnlA=AistoA(self.fnlAi)
             self.fnlAi2=Ais(self.fnlmap0, self.lmax); self.fnlA2=AistoA(self.fnlAi2) 
             self.fnlmp=hp.remove_monopole(self.fnlmap0, fitval=True)[1]
@@ -119,7 +127,7 @@ class SachsWolfeMap(object):
         if (self.gnlmap0!=None):
             self.gnlCls0=hp.anafast(self.gnlmap0, lmax=self.lmax)
             self.gnlCls1=hp.anafast(self.gnlmap1, lmax=self.lmax)
-            self.gnlA0=get_A0(self.gnlCls0, self.inputCls[:self.lmax+1])
+            self.gnlA0=get_A0(self.gnlCls0, inpCls)
             self.gnlAi=Ais(self.gnlmap1, self.lmax); self.gnlA=AistoA(self.gnlAi)
             self.gnlAi2=Ais(self.gnlmap0, self.lmax); self.gnlA2=AistoA(self.gnlAi2)
             self.gnlmp=hp.remove_monopole(self.gnlmap0, fitval=True)[1]

@@ -28,7 +28,7 @@ class SachsWolfeMap(object):
     This class can then also generate simple local type non-Gaussian maps 
     (fNL, gNL etc) for the Sachs Wolfe case.
     """
-    def __init__(self, fnl=100, gnl=1.0E5, LMAX=100, NSIDE=64, N=50, readGmap=-1, nodipole=False, mapsdir="maps/"):
+    def __init__(self, fnl=100, gnl=1.0E5, LMAX=100, NSIDE=128, N=50, readGmap=-1, nodipole=False, mapsdir="maps/"):
         """
         * LMAX   is the maximum l to be used to compute power asymmetry and other quantities whereas
                  the maps are generated using LMAX*3 multipoles
@@ -37,8 +37,8 @@ class SachsWolfeMap(object):
         self.gausmap=None
         self.fnl=fnl
         self.gnl=gnl
-        self.fnlmap=None
-        self.gnlmap=None
+        self.fnlmap0=None
+        self.gnlmap0=None
         self.lmax=LMAX  # this is the lmax to compute Ais and As; for mapmaking use 3*lmax
         self.NSIDE=NSIDE
         self.efolds=N
@@ -107,9 +107,11 @@ class SachsWolfeMap(object):
         inpCls=self.inputCls[:self.lmax+1]
         
         if (self.gausmap0!=None):
-            self.gausCls0=hp.anafast(self.gausmap0, lmax=self.lmax)
-            self.gausCls1=hp.anafast(self.gausmap1, lmax=self.lmax)
-            self.gausA0=get_A0(self.gausCls0, inpCls)
+            #self.gausCls0=hp.anafast(self.gausmap0, lmax=self.lmax)
+            self.gausCls0=hp.alm2cl(self.gausalm0)[0:self.lmax+1]
+            #self.gausCls1=hp.anafast(self.gausmap1, lmax=self.lmax)
+            self.gausCls1=hp.alm2cl(self.gausalm1)[0:self.lmax+1]
+            self.gausA0=get_A0(self.gausCls0[1:], inpCls[1:])
             self.gausAi=Ais(self.gausmap1, self.lmax); self.gausA=AistoA(self.gausAi)
             self.gausAi2=Ais(self.gausmap0, self.lmax); self.gausA2=AistoA(self.gausAi2)
             self.gausmp=hp.remove_monopole(self.gausmap0, fitval=True)[1]

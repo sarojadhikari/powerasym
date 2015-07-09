@@ -16,7 +16,7 @@ matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
 
-ALPHA=0.15
+ALPHA=0.1
 LW=2.0
 
 def plot_hist(pls, data, BINS=50, ht='stepfilled', clr='b', labl="", alp=0.1):

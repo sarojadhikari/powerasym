@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import matplotlib
-matplotlib.rcParams.update({'font.size': 20})
+matplotlib.rcParams.update({'font.size': 16})
 matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
@@ -109,7 +109,12 @@ plt.close()
 from posterior import PosteriorfNL
 
 pf = PosteriorfNL()
-plt.figure(num=None, figsize=(8,5))
+plt.figure(num=None, figsize=(6,5))
 pf.plot_posteriors(ymax=0.01)
 plt.savefig("plots/posteriorA1.pdf")
+plt.close
 
+plt.figure(num=None, figsize=(6,5))
+pf.plot_pvalues()
+plt.savefig("plots/pvalues.pdf")
+plt.close()

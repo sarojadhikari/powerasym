@@ -6,7 +6,7 @@ from ngsachswolfe import SachsWolfeMap
 
 NSIMS=10000
 LMAX=100
-NSIDE=64
+NSIDE=128
 NEFOLDS=50  #
 
 mapsdir="maps"+str(NEFOLDS)+"/"
@@ -19,8 +19,8 @@ if not os.path.exists(mapsdir):
     
 NODIPOLE=False
 
-fNL=10
-gNL=5000000
+fNL=1000
+gNL=7000000
 
 usesavedmaps=True
 #usesavedmaps=False

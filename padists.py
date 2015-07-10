@@ -6,6 +6,8 @@ make useful plots
 import sys
 import numpy as np
 from scipy.stats import chi, norm, chi2
+from scipy.special import kn
+
 from scipy import integrate
 
 import matplotlib.pyplot as plt
@@ -138,7 +140,7 @@ class PowerAsymmetryDistribution(object):
                 plot_hist(plt, (self.fgNLA0[i]-self.gA0+const)/(1-9.*3.*self.fgnls[i]*1.5E-8), clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
                 
             amin, amax=plt.xlim()
-            alist=np.arange(3*amin, amax*3, amax/250.)
+            alist=np.arange(3*amin, amax*3, 0.001)
             if (self.theoryplot):
                 if (self.TYPE=='fNL'):
                     theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt(16.*self.A0const*self.Nconst*self.fgnls[i]**2.0+sG**2.0))
@@ -175,16 +177,16 @@ class PowerAsymmetryDistribution(object):
             ALPHAG=0.5
         else:
             ALPHAG=ALPHA
-            
-        plot_hist(plt, self.gAi.flatten(), clr=self.clrs[0], alp=ALPHAG, ht=histtype)
-
+        
         sG=np.sqrt(np.var(self.gAi.flatten()))
         print sG
         mG=np.mean(self.gAi.flatten())
-        amin, amax = plt.xlim()
+        amin, amax = np.min(self.gAi), np.max(self.gAi)
         alist=np.arange(2*amin, amax*2, amax/250.)
         theoryGdist=norm.pdf(alist, loc=mG, scale=sG)
-        plt.plot(alist, theoryGdist,self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"=0")
+        if (self.TYPE!='gNL'):
+            plt.plot(alist, theoryGdist,self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"=0")
+            plot_hist(plt, self.gAi.flatten(), clr=self.clrs[0], alp=ALPHAG, ht=histtype)
 
         for i in range(len(self.fgnls)):
             if (self.theoryplot==False):
@@ -192,10 +194,16 @@ class PowerAsymmetryDistribution(object):
             else:
                 lbl=None
                 
-            plot_hist(plt, self.fgNLAi[i].flatten(), clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
+            plot_hist(plt, self.fgNLAi[i].flatten()-self.gAi.flatten(), clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
             
             if (self.theoryplot):
-                theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A1const*self.fgnls[i])**2.0+sG**2.0))
+                if (self.TYPE=='fNL'):
+                    theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A1const*self.fgnls[i])**2.0+sG**2.0))
+                elif (self.TYPE=='gNL'):
+                    sigmax0=np.sqrt(self.A0const*self.Nconst)
+                    sigmax1=8.*self.fgnls[i]*np.sqrt(3.*np.pi*self.A1const)
+                    theorynGdist=kn(0, np.abs(alist)/sigmax0/sigmax1)/np.pi/sigmax0/sigmax1
+                    
                 plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
         
         plt.xlim(-0.15, 0.15)

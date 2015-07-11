@@ -28,17 +28,16 @@ class SachsWolfeMap(object):
     This class can then also generate simple local type non-Gaussian maps 
     (fNL, gNL etc) for the Sachs Wolfe case.
     """
-    def __init__(self, fnl=100, gnl=1.0E5, LMAX=100, NSIDE=128, N=50, readGmap=-1, nodipole=False, mapsdir="maps/"):
+    def __init__(self, fnls=[100], LMAX=100, NSIDE=128, N=50, readGmap=-1, nodipole=False, mapsdir="maps/"):
         """
         * LMAX   is the maximum l to be used to compute power asymmetry and other quantities whereas
                  the maps are generated using LMAX*3 multipoles
         * N      is the number of extra efolds assumed for C_0 calculation, if N=0, C0=0.0
         """  
         self.gausmap=None
-        self.fnl=fnl
-        self.gnl=gnl
-        self.fnlmap0=None
-        self.gnlmap0=None
+        self.fnls=fnls
+        self.Nfnls=len(fnls)
+        self.fnlmaps0=None
         self.lmax=LMAX  # this is the lmax to compute Ais and As; for mapmaking use 3*lmax
         self.NSIDE=NSIDE
         self.efolds=N
@@ -68,13 +67,20 @@ class SachsWolfeMap(object):
         hp.write_alm(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausalm0)
         #hp.write_map(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausmap)
     
-    def generate_fnl_map(self, phisq0=0., phisq1=0.):
-        self.fnlmap0=self.gausmap0+3.*self.fnl*(np.power(self.gausmap0, 2.0)-phisq0)
-        self.fnlmap1=self.gausmap1+3.*self.fnl*(np.power(self.gausmap1, 2.0)-phisq1)
+    def generate_fnl_maps(self, phisq0=0., phisq1=0.):
+        self.fnlmaps0=[]
+        self.fnlmaps1=[]
         
-    def generate_gnl_map(self, phisq0=0., phisq1=0.):
-        self.gnlmap0=self.gausmap0+9.*self.gnl*(np.power(self.gausmap0, 3.0)-3.0*self.gausmap0*phisq0)
-        self.gnlmap1=self.gausmap1+9.*self.gnl*(np.power(self.gausmap1, 3.0)-3.0*self.gausmap1*phisq1)
+        sqmap0=np.power(self.gausmap0, 2.0)
+        sqmap1=np.power(self.gausmap1, 2.0)
+        
+        for i in range(self.Nfnls):
+            self.fnlmaps0.append(self.gausmap0+3.*self.fnls[i]*(sqmap0-phisq0))
+            self.fnlmaps1.append(self.gausmap1+3.*self.fnls[i]*(sqmap1-phisq1))
+                    
+    #def generate_gnl_map(self, phisq0=0., phisq1=0.):
+        #self.gnlmap0=self.gausmap0+9.*self.gnl*(np.power(self.gausmap0, 3.0)-3.0*self.gausmap0*phisq0)
+        #self.gnlmap1=self.gausmap1+9.*self.gnl*(np.power(self.gausmap1, 3.0)-3.0*self.gausmap1*phisq1)
 
     def get_SWCls(self, Aphi=7.94E-10, ns=0.965):
         """
@@ -117,20 +123,24 @@ class SachsWolfeMap(object):
             self.gausmp=hp.remove_monopole(self.gausmap0, fitval=True)[1]
             self.gausdipole=get_dipole(self.gausmap1)
             
-        if (self.fnlmap0!=None):
-            self.fnlCls0=hp.anafast(self.fnlmap0, lmax=self.lmax)
-            self.fnlCls1=hp.anafast(self.fnlmap1, lmax=self.lmax)
-            self.fnlA0=get_A0(self.fnlCls0, inpCls)
-            self.fnlAi=Ais(self.fnlmap1, self.lmax); self.fnlA=AistoA(self.fnlAi)
-            self.fnlAi2=Ais(self.fnlmap0, self.lmax); self.fnlA2=AistoA(self.fnlAi2) 
-            self.fnlmp=hp.remove_monopole(self.fnlmap0, fitval=True)[1]
-            self.fnldipole=get_dipole(self.fnlmap1)
+        if (self.fnlmaps0!=None):
+            self.fnlCls0=[]; self.fnlCls1=[]; self.fnlA0=[]; self.fnlAi=[]; self.fnlAi2=[]
+            self.fnlmp=[]; self.fnldipole=[]; self.fnlA=[]; self.fnlA2=[]
+            
+            for i in range(self.Nfnls):
+                self.fnlCls0.append(hp.anafast(self.fnlmaps0[i], lmax=self.lmax))
+                self.fnlCls1.append(hp.anafast(self.fnlmaps1[i], lmax=self.lmax))
+                self.fnlA0.append(get_A0(self.fnlCls0[i], inpCls))
+                self.fnlAi.append(Ais(self.fnlmaps1[i], self.lmax)); self.fnlA.append(AistoA(self.fnlAi[i]))
+                self.fnlAi2.append(Ais(self.fnlmaps0[i], self.lmax)); self.fnlA2.append(AistoA(self.fnlAi2[i])) 
+                self.fnlmp.append(hp.remove_monopole(self.fnlmaps0[i], fitval=True)[1])
+                self.fnldipole.append(get_dipole(self.fnlmaps1[i]))
         
-        if (self.gnlmap0!=None):
-            self.gnlCls0=hp.anafast(self.gnlmap0, lmax=self.lmax)
-            self.gnlCls1=hp.anafast(self.gnlmap1, lmax=self.lmax)
-            self.gnlA0=get_A0(self.gnlCls0, inpCls)
-            self.gnlAi=Ais(self.gnlmap1, self.lmax); self.gnlA=AistoA(self.gnlAi)
-            self.gnlAi2=Ais(self.gnlmap0, self.lmax); self.gnlA2=AistoA(self.gnlAi2)
-            self.gnlmp=hp.remove_monopole(self.gnlmap0, fitval=True)[1]
-            self.gnldipole=get_dipole(self.gnlmap1)
+        #if (self.gnlmaps0!=None):
+            #self.gnlCls0=hp.anafast(self.gnlmap0, lmax=self.lmax)
+            #self.gnlCls1=hp.anafast(self.gnlmap1, lmax=self.lmax)
+            #self.gnlA0=get_A0(self.gnlCls0, inpCls)
+            #self.gnlAi=Ais(self.gnlmap1, self.lmax); self.gnlA=AistoA(self.gnlAi)
+            #self.gnlAi2=Ais(self.gnlmap0, self.lmax); self.gnlA2=AistoA(self.gnlAi2)
+            #self.gnlmp=hp.remove_monopole(self.gnlmap0, fitval=True)[1]
+            #self.gnldipole=get_dipole(self.gnlmap1)

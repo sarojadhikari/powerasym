@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import matplotlib
-matplotlib.rcParams.update({'font.size': 16})
+matplotlib.rcParams.update({'font.size': 14})
 matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
@@ -16,23 +16,28 @@ MAPS=10000
 
 # generate fNLlocal Ai and A plots #
 #----------------------------------#
+xsize=7.0
+ysize=5.5
+
 pad = PowerAsymmetryDistribution(NMAPS=MAPS)
 pad.set_fgnl([250, 500]); pad.read_data()
 
+plt.figure(num=None, figsize=(xsize, ysize))
 pad.plot_A(histtype='step')
 plt.xlim(0.0, 0.12)
 plt.savefig("plots/Adist.pdf")
 plt.close()
 
+plt.figure(num=None, figsize=(xsize, ysize))
 pad.plot_Ai(histtype='step')
-plt.xlim(-0.08, 0.08)
+plt.xlim(-0.1, 0.1)
 plt.savefig("plots/Aidist.pdf")
 plt.close()
 
 pad.set_fgnl([50, 100]); pad.read_data()
-plt.figure(num=None, figsize=(8, 5))
+plt.figure(num=None, figsize=(xsize, ysize))
 pad.plot_A0()
-plt.xlim(-0.4, 0.4); plt.ylim(0.1, 50);
+plt.xlim(-0.4, 0.4); plt.ylim(0.3, 50);
 plt.title(r"$N="+str(pad.efolds)+"$")
 plt.savefig("plots/A0fNL.pdf")
 plt.close()
@@ -55,15 +60,15 @@ plt.close()
 
 # generate gNLlocal plots #
 #-------------------------#
-pad = PowerAsymmetryDistribution(typ='gNL', theory=True, NMAPS=MAPS)
-pad.set_fgnl([10000, 50000]); pad.read_data()
-plt.figure(num=None, figsize=(8,5))
-pad.plot_A0()
-plt.xlim(-0.01, 0.25)
-plt.ylim(0.1, 100)
-plt.title(r"$N="+str(pad.efolds)+"$")
-plt.savefig("plots/A0gNL.pdf")
-plt.close()
+#pad = PowerAsymmetryDistribution(typ='gNL', theory=True, NMAPS=MAPS)
+#pad.set_fgnl([10000, 50000]); pad.read_data()
+#plt.figure(num=None, figsize=(8,5))
+#pad.plot_A0()
+#plt.xlim(-0.01, 0.25)
+#plt.ylim(0.1, 100)
+#plt.title(r"$N="+str(pad.efolds)+"$")
+#plt.savefig("plots/A0gNL.pdf")
+#plt.close()
 
 # generate C_1-A correlation #
 #----------------------------#
@@ -105,16 +110,15 @@ plt.close()
 
 # generate posterior plots
 # ========================
-
 from posterior import PosteriorfNL
 
 pf = PosteriorfNL()
-plt.figure(num=None, figsize=(6,5))
+plt.figure(num=None, figsize=(xsize,ysize))
 pf.plot_posteriors(ymax=0.01)
 plt.savefig("plots/posteriorA1.pdf")
 plt.close
 
-plt.figure(num=None, figsize=(6,5))
+plt.figure(num=None, figsize=(xsize,ysize))
 pf.plot_pvalues()
 plt.savefig("plots/pvalues.pdf")
 plt.close()

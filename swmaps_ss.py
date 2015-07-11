@@ -1,16 +1,20 @@
+"""
+large lmax version of swmaps.py to look at small scale modes too
+"""
+
 import sys
 import os
 import numpy as np
 import healpy as hp
 from ngsachswolfe import SachsWolfeMap
 
-NSIMS=10000
-LMAX=100
-NSIDE=128
+NSIMS=20
+LMAX=500
+NSIDE=256
 NEFOLDS=50  #
 
-mapsdir="maps"+str(NEFOLDS)+"/"
-datadir="data"+str(NEFOLDS)+"/"
+mapsdir="ssmaps"+str(NEFOLDS)+"/"
+datadir="ssdata"+str(NEFOLDS)+"/"
 
 if not os.path.exists(datadir):
     os.makedirs(datadir)
@@ -19,7 +23,7 @@ if not os.path.exists(mapsdir):
     
 NODIPOLE=False
 
-fNLlist=[50, 100, 250, 500, 1000]
+fNLlist=[50, 100]
 NfNL=len(fNLlist)
 #gNL=700000000
 

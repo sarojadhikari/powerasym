@@ -13,7 +13,7 @@ from scipy import integrate
 import matplotlib.pyplot as plt
 
 import matplotlib
-matplotlib.rcParams.update({'font.size': 18})
+matplotlib.rcParams.update({'font.size': 16})
 matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
@@ -194,7 +194,7 @@ class PowerAsymmetryDistribution(object):
             else:
                 lbl=None
                 
-            plot_hist(plt, self.fgNLAi[i].flatten()-self.gAi.flatten(), clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
+            plot_hist(plt, self.fgNLAi[i].flatten(), clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
             
             if (self.theoryplot):
                 if (self.TYPE=='fNL'):

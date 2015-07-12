@@ -130,7 +130,7 @@ class SachsWolfeMap(object):
             for i in range(self.Nfnls):
                 self.fnlCls0.append(hp.anafast(self.fnlmaps0[i], nspec=self.lmax))
                 self.fnlCls1.append(hp.anafast(self.fnlmaps1[i], nspec=self.lmax))
-                self.fnlA0.append(get_A0(self.fnlCls0[i], inpCls))
+                self.fnlA0.append(get_A0(self.fnlCls0[i][1:], inpCls[1:]))
                 self.fnlAi.append(Ais(self.fnlmaps1[i], self.lmax)); self.fnlA.append(AistoA(self.fnlAi[i]))
                 self.fnlAi2.append(Ais(self.fnlmaps0[i], self.lmax)); self.fnlA2.append(AistoA(self.fnlAi2[i])) 
                 self.fnlmp.append(hp.remove_monopole(self.fnlmaps0[i], fitval=True)[1])

@@ -83,7 +83,7 @@ class PowerAsymmetryDistribution(object):
                     self.TYPELABEL=r'$f_{\rm NL}$'
                     self.A0const=7.94E-10 # to get sigma(A0), multiply by fNL and sqrt(N)
                     #self.A1const=0.9*0.04621/500./2.0   # for ns=1.0
-                    self.A1const=0.0258/500. # for ns=0.965, 0.75 is a fudge factor
+                    self.A1const=0.0258/500. # for ns=0.965
                     self.fgNLA0.append(np.load(self.basedir+"A0distfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistfNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistfNL"+str(fgnl)+".npy")[0:self.nmaps])
@@ -96,7 +96,7 @@ class PowerAsymmetryDistribution(object):
                     self.fgNLA0.append(np.load(self.basedir+"A0distgNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistgNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistgNL"+str(fgnl)+".npy")[0:self.nmaps])
-                    self.fgNLCls.append(np.load(self.basedir+"Cls0gNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1))
+                    self.fgNLCls.append(np.load(self.basedir+"Cls0gNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax))
                 else:
                     print "type must be fNL or gNL"
                     sys.exit(1)

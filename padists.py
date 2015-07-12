@@ -37,7 +37,7 @@ def NtoSTR(num):
     
 
 class PowerAsymmetryDistribution(object):
-    def __init__(self, typ='fNL', datafolder='data', NMAPS=10000, efolds=50, ns=0.965, theory=True):
+    def __init__(self, typ='fNL', datafolder='data', NMAPS=10000, efolds=50, ns=0.965, lmax=100, theory=True):
         """
         typ specifies where it is fNL or gNL; the gaussian distribution is read in both cases
         """
@@ -47,6 +47,7 @@ class PowerAsymmetryDistribution(object):
         self.basedir=datafolder+str(efolds)+"/"
         self.fgnls=None
         self.nmaps=NMAPS
+        self.lmax=lmax
         self.read_data()
         self.clrs=['b', 'g', 'r', 'black']
         self.ls=[':', '--', '-', 'o']
@@ -65,7 +66,7 @@ class PowerAsymmetryDistribution(object):
             self.gAi=np.load(self.basedir+"AidistG.npy")
             self.NSIMS=len(self.gAi)/3
             self.gA=np.load(self.basedir+"AdistG.npy")
-            self.gCls=np.load(self.basedir+"Cls0G.npy")[0:self.nmaps*101].reshape(self.nmaps, 101)
+            self.gCls=np.load(self.basedir+"Cls0G.npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)
             #self.phisq=np.load(self.basedir+"phisq.npy")
         except:
             print "cannot read the asymmetry distribution for the Gaussian case!"
@@ -86,7 +87,7 @@ class PowerAsymmetryDistribution(object):
                     self.fgNLA0.append(np.load(self.basedir+"A0distfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistfNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistfNL"+str(fgnl)+".npy")[0:self.nmaps])
-                    self.fgNLCls.append(np.load(self.basedir+"Cls0fNL"+str(fgnl)+".npy")[0:self.nmaps*101].reshape(self.nmaps, 101)) # 101 because the Cls are saved upto LMAX=100
+                    self.fgNLCls.append(np.load(self.basedir+"Cls0fNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)) # 101 because the Cls are saved upto LMAX=100
                 elif self.TYPE=='gNL':
                     #self.A0const=3.95E-08
                     self.A0const=7.94E-10 # this is A_\phi 
@@ -95,7 +96,7 @@ class PowerAsymmetryDistribution(object):
                     self.fgNLA0.append(np.load(self.basedir+"A0distgNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistgNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistgNL"+str(fgnl)+".npy")[0:self.nmaps])
-                    self.fgNLCls.append(np.load(self.basedir+"Cls0gNL"+str(fgnl)+".npy")[0:self.nmaps*101].reshape(self.nmaps, 101))
+                    self.fgNLCls.append(np.load(self.basedir+"Cls0gNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1))
                 else:
                     print "type must be fNL or gNL"
                     sys.exit(1)

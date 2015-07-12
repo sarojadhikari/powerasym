@@ -44,19 +44,18 @@ plt.close()
 
 # generate fNLlocal nodipole plots #
 #----------------------------------#
-#pad = PowerAsymmetryDistribution(NMAPS=MAPS)
-#pad.set_fgnl([500]); pad.read_data()
-#pad.clrs=['w', 'g', 'r', 'black']
-#pad.plot_A()
-#AG=np.load("data50/AdistG.npy")
-#plt.hist(AG, bins=50, histtype='step', color='b', normed=True)
-
-#plt.savefig("plots/Anodipole.pdf")
-#plt.close()
-
-#pad.plot_Ai()
-#plt.savefig("plots/Ainodipole.pdf")
-#plt.close()
+pad = PowerAsymmetryDistribution(NMAPS=MAPS)
+pad.set_fgnl([500]); pad.read_data()
+plt.figure(num=None, figsize=(xsize, ysize))
+pad.plot_A(histtype='step')
+plt.xlim(0.0, 0.12)
+Anodipole=np.load("dataND50/AdistfNL500.npy")
+plt.hist(Anodipole, histtype='step', bins=50, lw=2.0, color="r", normed=True, label=r"$f_{\rm NL}=500,\; C_1=0$")
+plt.legend()
+plt.xlabel(r"$A$")
+plt.ylabel(r"$p(A)$")
+plt.savefig("plots/Anodipole.pdf")
+plt.close()
 
 # generate gNLlocal plots #
 #-------------------------#

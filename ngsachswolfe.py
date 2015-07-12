@@ -128,8 +128,8 @@ class SachsWolfeMap(object):
             self.fnlmp=[]; self.fnldipole=[]; self.fnlA=[]; self.fnlA2=[]
             
             for i in range(self.Nfnls):
-                self.fnlCls0.append(hp.anafast(self.fnlmaps0[i], lmax=self.lmax))
-                self.fnlCls1.append(hp.anafast(self.fnlmaps1[i], lmax=self.lmax))
+                self.fnlCls0.append(hp.anafast(self.fnlmaps0[i], nspec=self.lmax))
+                self.fnlCls1.append(hp.anafast(self.fnlmaps1[i], nspec=self.lmax))
                 self.fnlA0.append(get_A0(self.fnlCls0[i], inpCls))
                 self.fnlAi.append(Ais(self.fnlmaps1[i], self.lmax)); self.fnlA.append(AistoA(self.fnlAi[i]))
                 self.fnlAi2.append(Ais(self.fnlmaps0[i], self.lmax)); self.fnlA2.append(AistoA(self.fnlAi2[i])) 

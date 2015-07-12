@@ -8,9 +8,9 @@ import numpy as np
 import healpy as hp
 from ngsachswolfe import SachsWolfeMap
 
-NSIMS=20
+NSIMS=500
 LMAX=500
-NSIDE=256
+NSIDE=512
 NEFOLDS=50  #
 
 mapsdir="ssmaps"+str(NEFOLDS)+"/"

@@ -223,7 +223,7 @@ class PowerAsymmetryDistribution(object):
         sG=np.sqrt(np.var(self.gAi))
         mG=np.mean(self.gAi)
         amin, amax = plt.xlim()
-        alist=np.arange(amin, amax*3, amax/250.)
+        alist=np.arange(0.0, np.max(self.fgNLA), 0.001)
         theoryGdist=chi.pdf(alist, 3,scale=sG)
         plt.plot(alist, theoryGdist,self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+r"$=0$")
 
@@ -241,7 +241,7 @@ class PowerAsymmetryDistribution(object):
         
         # theory plots
         
-        plt.xlim(0.0, 0.2)
+        #plt.xlim(0.0, 0.2)
         #plt.xticks([0.02, 0.04, 0.06, 0.08, 0.10])
         plt.xlabel(r'$A$')
         plt.ylabel(r'$p(A)$')

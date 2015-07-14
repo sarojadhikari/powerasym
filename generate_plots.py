@@ -119,5 +119,11 @@ plt.close
 
 plt.figure(num=None, figsize=(xsize,ysize))
 pf.plot_pvalues()
+plt.xlim(0, 500)
 plt.savefig("plots/pvalues.pdf")
+plt.close()
+
+plt.figure(num=None, figsize=(xsize, ysize))
+pf.plot_combined_posteriors()
+plt.savefig("plots/comb_posteriors.pdf")
 plt.close()

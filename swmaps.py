@@ -4,10 +4,10 @@ import numpy as np
 import healpy as hp
 from ngsachswolfe import SachsWolfeMap
 
-NSIMS=10000
+NSIMS=1000
 LMAX=100
 NSIDE=128
-NEFOLDS=50  #
+NEFOLDS=40  #
 
 mapsdir="maps"+str(NEFOLDS)+"/"
 datadir="data"+str(NEFOLDS)+"/"
@@ -19,11 +19,11 @@ if not os.path.exists(mapsdir):
     
 NODIPOLE=False
 
-fNLlist=[50, 100, 250, 500, 1000]
+fNLlist=[100000, 500000, 1000000, 10000000]
 NfNL=len(fNLlist)
 #gNL=700000000
 
-usesavedmaps=False
+usesavedmaps=True
 #usesavedmaps=False
 
 A0G=[]; A0fNL=[[] for i in range(NfNL)]

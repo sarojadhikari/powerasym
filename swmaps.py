@@ -19,7 +19,7 @@ if not os.path.exists(mapsdir):
     
 NODIPOLE=False
 
-fNLlist=[100000, 500000, 1000000, 10000000]
+fNLlist=[250, 500, -250, -500]
 NfNL=len(fNLlist)
 #gNL=700000000
 

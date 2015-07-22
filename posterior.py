@@ -8,7 +8,7 @@ from scipy.stats import chi, norm, foldnorm
 
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.rcParams.update({'font.size': 16})
+matplotlib.rcParams.update({'font.size': 15})
 matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
@@ -22,8 +22,10 @@ class PosteriorfNL(object):
         self.A0const=7.94E-10
         self.A1const=0.0258/500. # for ns=0.965
         self.sigmaG=0.0137876
+        self.sigma0G=0.0142527
         self.pfNL0=self.pvalue_norm(0.0, mu=40, sigma=20)
         self.pfNL1=self.pvalue_fold(0.0, mu=40, sigma=20)
+        self.Nconst=1.2135*(1.0-np.exp(-(self.ns-1)*self.efolds))/(self.ns-1)
         
     def pdf(self, A, fNL):
         """
@@ -37,10 +39,20 @@ class PosteriorfNL(object):
         #else:
             #return 0.0
             
-        if (fNL>0.0):
+        if (fNL>=0.0):
             return chi.pdf(A, 3, scale=np.sqrt((self.A1const*fNL)**2.0+self.sigmaG**2.0))
         else:
             return 0.0
+        
+    def pdfA0(self, A0, fNL):
+        self.Nconst=1.2135*(1.0-np.exp(-(self.ns-1)*self.efolds))/(self.ns-1)
+        return self.pdf_fold(A0, 0.0, np.sqrt(16.*self.Nconst*self.A0const*fNL**2.0+self.sigma0G**2.0))
+        #return norm.pdf(A0, loc=0.0, scale=np.sqrt(a0var**2.0+self.sigma0G**2.0))
+    
+    def post_A01(self, fNLlist, A, A0):
+        post = lambda fNL: self.pdfA0(A0, fNL)*self.pdf(A, fNL)
+        pnorm = integrate.quad(post, 0.0, np.infty)[0]
+        return np.array([post(fNL)/pnorm for fNL in fNLlist])
     
     def pvalue(self, A, fNL=0.0):
         """
@@ -50,9 +62,8 @@ class PosteriorfNL(object):
         pvalue = integrate.quad(fnc, A, np.infty)[0]
         return pvalue
     
-    def pvalue_fold(self, x, mu=40, sigma=20):
-        scl = 1.0/np.sqrt(2.*np.pi)/sigma
-        pdf = lambda x: 0.0 if x<0.0 else scl*(np.exp(-(x-mu)**2.0/2.0/sigma**2.0) + np.exp(-(x+mu)**2.0/2.0/sigma**2.0))
+    def pvalue_fold(self, x, mu=-100, sigma=100):
+        pdf = lambda x: self.pdf_fold(x, mu, sigma)
         return integrate.quad(pdf, x, np.infty)[0]
     
     def pvalue_norm(self, x, mu=0, sigma=1):
@@ -65,10 +76,15 @@ class PosteriorfNL(object):
         else:
             return integrate.quad(fnc, -np.infty, x)[0]
     
-    def sddr(self, A, fNL=37.2, sigmafNL=19.9):
-        pnorm=norm.pdf(0.0, loc=fNL, scale=sigmafNL)
+    def sddr(self, A, fNL=-100, sigmafNL=100):
+        #pnorm=norm.pdf(0.0, loc=fNL, scale=sigmafNL)
         pfold=self.fNL_bispectrum_pdf([0.0], mean=fNL, sigma=sigmafNL)[0]
-        return self.posterior([0.0], A)[0]/pfold
+        return self.combined_posterior([0.0], A, mean=fNL, sigma=sigmafNL)[0]/pfold
+    
+    def sddr_withA0(self, A, A0, N, fNL=-100, sigmafNL=100):
+        pfold=self.fNL_bispectrum_pdf([0.0], mean=fNL, sigma=sigmafNL)[0]
+        self.efolds=N
+        return self.combined_posteriors_withA0([0.0], A, A0, mean=fNL, sigma=sigmafNL)[0]/pfold
     
     def posterior_norm(self, A):
         """
@@ -76,7 +92,7 @@ class PosteriorfNL(object):
         """
         fnc = lambda fNL: self.pdf(A, fNL)
         norm = integrate.quad(fnc, 0.0, np.infty)
-        print norm[1]
+        #print norm[1]
         return norm[0]
     
     def posterior(self, fNLlist, A):
@@ -88,24 +104,40 @@ class PosteriorfNL(object):
             A=0.000001
             
         norm = self.posterior_norm(A)
-        print norm
+        #print norm
         return np.array([self.pdf(A, fNL)/norm for fNL in fNLlist])
     
-    def fNL_bispectrum_pdf(self, fNLlist, mean=0., sigma=100):
+    def pdf_fold(self, x, mean=-100, sigma=100):
+        if x<0.0:
+            return 0.0
+        else:
+            scl=1.0/np.sqrt(2.*np.pi)/sigma
+            return scl*(np.exp(-(x-mean)**2.0/2.0/sigma**2.0) + np.exp(-(x+mean)**2.0/2.0/sigma**2.0))
+    
+    def fNL_bispectrum_pdf(self, fNLlist, mean=-100, sigma=100):
         """
         return a half gaussian pdf with sigma as the pdf for the magnitude of fNL from
         bispectrum measurements
         """
-        scl = 1.0/np.sqrt(2.*np.pi)/sigma
-        pdf = lambda x: 0.0 if x<0.0 else scl*(np.exp(-(x-mean)**2.0/2.0/sigma**2.0) + np.exp(-(x+mean)**2.0/2.0/sigma**2.0))
-        return np.array([pdf(fNL) for fNL in fNLlist])
+        return np.array([self.pdf_fold(fNL, mean=mean, sigma=sigma) for fNL in fNLlist])
     
-    def combined_posterior(self, fNLlist, A, mean=-50, sigma=200):
+    def combined_posteriors_withA0(self, fNLlist, A, A0=0.3, mean=-100, sigma=100):
         if (A<0.000001):
             A=0.000001
-        scl = 1.0/np.sqrt(2.*np.pi)/sigma
-        foldpdf = lambda x: 0.0 if x<0.0 else scl*(np.exp(-(x-mean)**2.0/2.0/sigma**2.0) + np.exp(-(x+mean)**2.0/2.0/sigma**2.0))
-        post = lambda fNL: foldpdf(fNL)*self.pdf(A, fNL)
+        #scl = 1.0/np.sqrt(2.*np.pi)/sigma
+        if (A0!=0.0):
+            post = lambda fNL: self.pdf_fold(fNL, mean, sigma)*self.pdf(A, fNL)*self.pdfA0(A0, fNL)
+        else:
+            post = lambda fNL: self.pdf_fold(fNL, mean, sigma)*self.pdf(A, fNL)
+            
+        norm = integrate.quad(post, 0.0, 5000.)[0]        
+        return np.array([post(fNL)/norm for fNL in fNLlist])
+    
+    def combined_posterior(self, fNLlist, A, mean=-100, sigma=100):
+        if (A<0.000001):
+            A=0.000001
+        #scl = 1.0/np.sqrt(2.*np.pi)/sigma
+        post = lambda fNL: self.pdf_fold(fNL, mean, sigma)*self.pdf(A, fNL)
         norm = integrate.quad(post, 0.0, np.infty)[0]
         return np.array([post(fNL)/norm for fNL in fNLlist])
     
@@ -137,7 +169,7 @@ class PosteriorfNL(object):
     def plot_combined_posteriors(self, Alist=[0.0, 0.04, 0.055, 0.06], 
                               llist=["dashed", "dashdot", "dotted", "solid"],
                               clist=["black", "red", "blue", "green"],
-                              LW=2, fNLmax=800, ALP=0.02, mean=-50, sigma=200):
+                              LW=2, fNLmax=800, ALP=0.02, mean=-100, sigma=100):
         """
         plot multiple posterior curves
         """
@@ -148,9 +180,32 @@ class PosteriorfNL(object):
         plt.xlabel(r"$f_{\rm NL}$")
         plt.ylabel(r"$p(f_{\rm NL})$")
         plt.legend(loc=1)
+
+    def plot_combined_posteriors_withA0(self, A=0.055, A0list=[0.0, 0.02, 0.04, 0.04],
+                                        Nlist=[10, 40, 50, 100],
+                              llist=["dashed", "dashdot", "dotted", "solid"],
+                              clist=["black", "red", "blue", "green"],
+                              LW=2, fNLmax=800, ALP=0.02, mean=-100, sigma=100):
+        """
+        plot multiple posterior curves
+        """
+        fNLlist=np.arange(0.0, 50, 0.1)
+        fNLlist=np.append(fNLlist, np.arange(50, fNLmax, 1))
+        for i in range(0, len(A0list)):
+            if (A0list[i]!=0.0):
+                labl=r"$A_0="+str(A0list[i])+", N="+str(Nlist[i])+"$"
+            else:
+                labl=r"${\rm no} \;A_0{\rm information}$"
+            self.efolds=Nlist[i]
+            plt.plot(fNLlist, self.combined_posteriors_withA0(fNLlist, A, A0list[i], mean=mean, sigma=sigma), linestyle=llist[i], linewidth=LW, color=clist[i], label=labl)
+            
+        plt.xlabel(r"$f_{\rm NL}$")
+        plt.ylabel(r"$p(f_{\rm NL})$")
+        plt.title(r"$A="+str(A)+"$")
+        plt.legend(loc=1)
     
     def plot_pvalue(self, A, ls="solid", lw=2, clr="b", fNLmin=0, fNLmax=500):
-        fNLlist=np.arange(fNLmin, fNLmax, 10)
+        fNLlist=np.arange(fNLmin, fNLmax, 1)
         pvalues=np.array([self.pvalue(A, fNL) for fNL in fNLlist])
         plt.plot(fNLlist, pvalues, linestyle=ls, linewidth=lw, label=r"$A="+str(A)+"$", color=clr)
         

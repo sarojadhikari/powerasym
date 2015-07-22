@@ -87,7 +87,7 @@ class PowerAsymmetryDistribution(object):
                     self.fgNLA0.append(np.load(self.basedir+"A0distfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistfNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistfNL"+str(fgnl)+".npy")[0:self.nmaps])
-                    self.fgNLCls.append(np.load(self.basedir+"Cls0fNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)) # 101 because the Cls are saved upto LMAX=100
+                    self.fgNLCls.append(np.load(self.basedir+"Cls0fNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax)].reshape(self.nmaps, self.lmax)) # 101 because the Cls are saved upto LMAX=100
                 elif self.TYPE=='gNL':
                     #self.A0const=3.95E-08
                     self.A0const=7.94E-10 # this is A_\phi 

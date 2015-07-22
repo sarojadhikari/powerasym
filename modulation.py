@@ -29,3 +29,4 @@ class PowerModulation(object):
         self.ASq(L)
         
         
+        

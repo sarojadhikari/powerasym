@@ -7,7 +7,7 @@ from ngSWgNL import gNLSWMap
 NSIMS=10
 LMAX=100
 NSIDE=128
-NEFOLDS=40  #
+NEFOLDS=50  #
 
 mapsdir="maps"+str(NEFOLDS)+"/"
 datadir="gnldata"+str(NEFOLDS)+"/"
@@ -17,7 +17,7 @@ if not os.path.exists(datadir):
 if not os.path.exists(mapsdir):
     os.makedirs(mapsdir)
     
-gNLlist=[1000, 10000, 50000, 100000]
+gNLlist=[1000, 10000, 100000, 1000000]
 NfNL=len(gNLlist)
 
 usesavedmaps=True
@@ -42,7 +42,7 @@ if not(usesavedmaps):
     #np.save(datadir+"phisq0.npy", phisq0)
     #np.save(datadir+"phisq1.npy", phisq1)
 else:
-    phisq=np.load(datadir+"phisq.npy")
+    phisq=np.load(mapsdir+"phisq.npy")
 
 print np.mean(phisq)
 phisqsub=np.mean(phisq)

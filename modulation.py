@@ -17,7 +17,7 @@ class PowerModulation(object):
     
     def ASq(self, L):
         integrand = lambda kl: np.power(sph_jn(L, self.Lbox*kl)[0][-1], 2.0)*np.power(kl, self.ns-2.0)
-        const = 64.*np.pi*self.A/(np.power(k0, self.ns-1.0))
+        const = 64.*np.pi*self.A/(np.power(self.k0, self.ns-1.0))
         klmax = np.pi/self.Lbox
         intresult = integrate.quad(integrand, self.klmin, klmax)
         self.asq0=const*intresult[0]

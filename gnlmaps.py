@@ -4,7 +4,8 @@ import numpy as np
 import healpy as hp
 from ngSWgNL import gNLSWMap
 
-NSIMS=10
+SIMStart=5000
+NSIMS=1000
 LMAX=100
 NSIDE=128
 NEFOLDS=50  #
@@ -18,16 +19,16 @@ if not os.path.exists(mapsdir):
     os.makedirs(mapsdir)
     
 gNLlist=[1000, 10000, 100000, 1000000]
-NfNL=len(gNLlist)
+NgNL=len(gNLlist)
 
 usesavedmaps=True
 
-A0G=[]; A0gNL=[[] for i in range(NfNL)]
-AG=[]; AgNL=[[] for i in range(NfNL)]
-AiG=[]; AigNL=[[] for i in range(NfNL)]
+A0G=[]; A0gNL=[[] for i in range(NgNL)]
+AG=[]; AgNL=[[] for i in range(NgNL)]
+AiG=[]; AigNL=[[] for i in range(NgNL)]
 
-dG=[]; dgNL=[[] for i in range(NfNL)]
-ClG=[]; ClgNL=[[] for i in range(NfNL)]
+dG=[]; dgNL=[[] for i in range(NgNL)]
+ClG=[]; ClgNL=[[] for i in range(NgNL)]
 
 phisq=[]
 
@@ -50,24 +51,41 @@ phisqsub=np.mean(phisq)
 #sys.exit(0)
 
 # now generate non-Gaussian maps
-for sim in range(NSIMS):
+if (SIMStart>0):
+    try:
+        A0G=np.load(datadir+"A0distG.npy")[:SIMStart]
+        AG=np.load(datadir+"AdistG.npy")[:SIMStart]
+        AiG=np.load(datadir+"AidistG.npy")[:SIMStart]
+        dG=np.load(datadir+"dipolesG.npy")[:SIMStart]
+        ClG=np.load(datadir+"ClsG.npy")[:SIMStart]
+    
+        for i in range(NgNL):
+            A0gNL[i]=np.load(datadir+"A0distgNL"+str(gNLlist[i])+".npy")[:SIMStart]
+            AgNL[i]=np.load(datadir+"AdistgNL"+str(gNLlist[i])+".npy")[:SIMStart]
+            AigNL[i]=np.load(datadir+"AidistgNL"+str(gNLlist[i])+".npy")[:SIMStart]
+            dgNL[i]=np.load(datadir+"dipolesgNL"+str(gNLlist[i])+".npy")[:SIMStart]
+            ClgNL[i]=np.load(datadir+"ClsgNL"+str(gNLlist[i])+".npy")[:SIMStart]
+    except:
+        print "could not read all the saved files"
+
+for sim in range(SIMStart, NSIMS):
     print sim
     swmap=gNLSWMap(gnls=gNLlist, LMAX=LMAX, NSIDE=NSIDE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)    
     swmap.generate_gnl_maps(phisqsub)
     swmap.calculate()
 
-    A0G.append(swmap.gausA0)
-    AG.append(swmap.gausA)
-    AiG.append(swmap.gausAi)
-    dG.append(swmap.gausdipole)
-    ClG.append(swmap.gausCls)
+    A0G=np.append(A0G, swmap.gausA0)
+    AG=np.append(AG, swmap.gausA)
+    AiG=np.append(AiG, swmap.gausAi)
+    dG=np.append(dG, swmap.gausdipole)
+    ClG=np.append(ClG, swmap.gausCls)
     
-    for i in range(NfNL):
-        A0gNL[i].append(swmap.gnlA0[i])
-        AgNL[i].append(swmap.gnlA[i])
-        AigNL[i].append(swmap.gnlAi[i])
-        dgNL[i].append(swmap.gnldipole[i])
-        ClgNL[i].append(swmap.gnlCls[i])
+    for i in range(NgNL):
+        A0gNL[i]=np.append(A0gNL[i], swmap.gnlA0[i])
+        AgNL[i]=np.append(AgNL[i], swmap.gnlA[i])
+        AigNL[i]=np.append(AigNL[i], swmap.gnlAi[i])
+        dgNL[i]=np.append(dgNL[i], swmap.gnldipole[i])
+        ClgNL[i]=np.append(ClgNL[i], swmap.gnlCls[i])
         
 # SAVE 
 np.save(datadir+"A0distG.npy", A0G)
@@ -76,7 +94,7 @@ np.save(datadir+"AidistG.npy", AiG)
 np.save(datadir+"dipolesG.npy", dG)
 np.save(datadir+"ClsG.npy", ClG)
 
-for i in range(NfNL):
+for i in range(NgNL):
     np.save(datadir+"A0distgNL"+str(gNLlist[i])+".npy", A0gNL[i])
     np.save(datadir+"AdistgNL"+str(gNLlist[i])+".npy", AgNL[i])
     np.save(datadir+"AidistgNL"+str(gNLlist[i])+".npy", AigNL[i])

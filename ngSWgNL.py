@@ -34,9 +34,9 @@ class gNLSWMap(object):
         self.gausmap=hp.alm2map(self.gausalm, nside=self.NSIDE) # includes the monopole bit
     
     def save_gaus_map(self, mapN):
-        print "for the gNL we will use the maps generated earlier, so no need to save"
-        #print "writing "+str(mapN)
-        #hp.write_alm(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausalm0)
+        #print "for the gNL we will use the maps generated earlier, so no need to save"
+        print "writing "+str(mapN)
+        hp.write_alm(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausalm)
     
     def generate_gnl_maps(self, phisq=0.):
         self.gnlmaps=[]

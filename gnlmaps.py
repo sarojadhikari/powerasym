@@ -5,7 +5,7 @@ import healpy as hp
 from ngSWgNL import gNLSWMap
 
 SIMStart=5000
-NSIMS=1000
+NSIMS=10000
 LMAX=100
 NSIDE=128
 NEFOLDS=50  #

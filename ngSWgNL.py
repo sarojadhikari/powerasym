@@ -29,7 +29,13 @@ class gNLSWMap(object):
         if (readGmap<0):
             self.gausalm=hp.synalm(self.inputCls)
         else:
+            # code assumes that self.mapsdir="maps50/"
             self.gausalm=hp.read_alm(self.mapsdir+"gmap_"+str(readGmap)+".fits")
+            ns=0.965
+            C0N=(1.0-np.exp(-(ns-1)*self.efolds))/(ns-1)
+            C050=(1.0-np.exp(-(ns-1)*50))/(ns-1)
+            alm0r=np.sqrt(C0N/C050)
+            self.gausalm[0]=self.gausalm[0]*alm0r
                         
         self.gausmap=hp.alm2map(self.gausalm, nside=self.NSIDE) # includes the monopole bit
     

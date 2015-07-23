@@ -4,13 +4,13 @@ import numpy as np
 import healpy as hp
 from ngSWgNL import gNLSWMap
 
-SIMStart=5000
-NSIMS=10000
+SIMStart=0
+NSIMS=5000
 LMAX=100
 NSIDE=128
-NEFOLDS=50  #
+NEFOLDS=150  #
 
-mapsdir="maps"+str(NEFOLDS)+"/"
+mapsdir="maps50/"
 datadir="gnldata"+str(NEFOLDS)+"/"
 
 if not os.path.exists(datadir):
@@ -34,16 +34,16 @@ phisq=[]
 
 # first either generate all the Gaussian maps or get the maps and compute <phi^2>
 if not(usesavedmaps):
-    print "use saved maps for gNL"
-    #for sim in range(NSIMS):
-        #swmap=SachsWolfeMap(fnls=fNLlist, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, mapsdir=mapsdir, N=NEFOLDS)
-        #swmap.save_gaus_map(sim)
-        #phisq0.append(np.mean(swmap.gausmap0*swmap.gausmap0))
-        #phisq1.append(np.mean(swmap.gausmap1*swmap.gausmap1))
-    #np.save(datadir+"phisq0.npy", phisq0)
-    #np.save(datadir+"phisq1.npy", phisq1)
+    #print "use saved maps for gNL"
+    for sim in range(SIMStart, NSIMS):
+        swmap=gNLSWMap(gnls=gNLlist, LMAX=LMAX, NSIDE=NSIDE, mapsdir=mapsdir, N=NEFOLDS)
+        swmap.save_gaus_map(sim)
+        phisq.append(np.mean(swmap.gausmap*swmap.gausmap))
+    np.save(mapsdir+"phisq.npy", phisq)
 else:
-    phisq=np.load(mapsdir+"phisq.npy")
+    for sim in range(SIMStart, NSIMS):
+        swmap=gNLSWMap(gnls=gNLlist, LMAX=LMAX, NSIDE=NSIDE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)
+        phisq.append(np.mean(swmap.gausmap*swmap.gausmap))
 
 print np.mean(phisq)
 phisqsub=np.mean(phisq)

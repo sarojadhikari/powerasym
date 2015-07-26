@@ -8,10 +8,11 @@ from scipy.stats import chi, norm, foldnorm
 
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.rcParams.update({'font.size': 15})
+matplotlib.rcParams.update({'font.size': 18})
 matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
+lf=18                      
 
 class PosteriorfNL(object):
     """
@@ -23,8 +24,6 @@ class PosteriorfNL(object):
         self.A1const=0.0258/500. # for ns=0.965
         self.sigmaG=0.0137876
         self.sigma0G=0.0142527
-        self.pfNL0=self.pvalue_norm(0.0, mu=40, sigma=20)
-        self.pfNL1=self.pvalue_fold(0.0, mu=40, sigma=20)
         self.Nconst=1.2135*(1.0-np.exp(-(self.ns-1)*self.efolds))/(self.ns-1)
         
     def pdf(self, A, fNL):
@@ -151,7 +150,7 @@ class PosteriorfNL(object):
     def plot_posteriors(self, Alist=[0.0, 0.04, 0.055, 0.06], 
                               llist=["dashed", "dashdot", "dotted", "solid"],
                               clist=["black", "red", "blue", "green"],
-                              LW=2, fNLmax=2000, ymin=5E-6, ymax=5E-6, ALP=0.02):
+                              LW=2.5, fNLmax=2000, ymin=5E-6, ymax=5E-6, ALP=0.02):
         """
         plot multiple posterior curves
         """
@@ -163,13 +162,13 @@ class PosteriorfNL(object):
             
         plt.xlabel(r"$f_{\rm NL}$")
         plt.ylabel(r"$p(f_{\rm NL})$")
-        plt.legend()
+        plt.legend(fontsize=lf)
         plt.yscale('log')
         
     def plot_combined_posteriors(self, Alist=[0.0, 0.04, 0.055, 0.06], 
                               llist=["dashed", "dashdot", "dotted", "solid"],
                               clist=["black", "red", "blue", "green"],
-                              LW=2, fNLmax=800, ALP=0.02, mean=-100, sigma=100):
+                              LW=2.5, fNLmax=800, ALP=0.02, mean=-100, sigma=100):
         """
         plot multiple posterior curves
         """
@@ -179,13 +178,13 @@ class PosteriorfNL(object):
             
         plt.xlabel(r"$f_{\rm NL}$")
         plt.ylabel(r"$p(f_{\rm NL})$")
-        plt.legend(loc=1)
+        plt.legend(loc=3, fontsize=lf)
 
     def plot_combined_posteriors_withA0(self, A=0.055, A0list=[0.0, 0.02, 0.04, 0.04],
-                                        Nlist=[10, 40, 50, 100],
+                                        Nlist=[10, 50, 50, 100],
                               llist=["dashed", "dashdot", "dotted", "solid"],
                               clist=["black", "red", "blue", "green"],
-                              LW=2, fNLmax=800, ALP=0.02, mean=-100, sigma=100):
+                              LW=2.5, fNLmax=800, ALP=0.02, mean=-100, sigma=100):
         """
         plot multiple posterior curves
         """
@@ -193,16 +192,21 @@ class PosteriorfNL(object):
         fNLlist=np.append(fNLlist, np.arange(50, fNLmax, 1))
         for i in range(0, len(A0list)):
             if (A0list[i]!=0.0):
-                labl=r"$A_0="+str(A0list[i])+", N="+str(Nlist[i])+"$"
+                labl=r"$A_0="+str(A0list[i])+",\;N="+str(Nlist[i])+"$"
             else:
-                labl=r"${\rm no} \;A_0{\rm information}$"
+                labl="$A_0$ {\rm not used}"
             self.efolds=Nlist[i]
             plt.plot(fNLlist, self.combined_posteriors_withA0(fNLlist, A, A0list[i], mean=mean, sigma=sigma), linestyle=llist[i], linewidth=LW, color=clist[i], label=labl)
+            if (A0list[i]>0.0):
+                sd=self.sddr_withA0(A, A0list[i], Nlist[i])
+            else:
+                sd=self.sddr(A)
+            print sd, np.log(sd)
             
         plt.xlabel(r"$f_{\rm NL}$")
         plt.ylabel(r"$p(f_{\rm NL})$")
         plt.title(r"$A="+str(A)+"$")
-        plt.legend(loc=1)
+        plt.legend(loc=1, fontsize=lf)
     
     def plot_pvalue(self, A, ls="solid", lw=2, clr="b", fNLmin=0, fNLmax=500):
         fNLlist=np.arange(fNLmin, fNLmax, 1)
@@ -212,7 +216,7 @@ class PosteriorfNL(object):
     def plot_pvalues(self, Alist=[0.0, 0.040, 0.055, 0.060],
                            llist=["dashed", "dashdot", "dotted", "solid"],
                            clist=["black", "red", "blue", "green"],
-                           LW=2, fNLmax=500):
+                           LW=2.5, fNLmax=500):
         for i in range(0, len(Alist)):
             self.plot_pvalue(Alist[i], ls=llist[i], lw=LW, clr=clist[i], fNLmax=fNLmax)
         
@@ -222,6 +226,6 @@ class PosteriorfNL(object):
         plt.text(220, 0.0011, r"$3.3\sigma$")
         plt.xlabel(r"$f_{\rm NL}$")
         plt.ylabel(r"$p{\rm-value}$")
-        plt.legend(loc=0)
-        plt.ylim(1E-4, 1.1)
+        plt.legend(loc=0, fontsize=lf)
+        plt.ylim(1E-4, 2.)
         plt.yscale('log')

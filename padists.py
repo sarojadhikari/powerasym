@@ -13,7 +13,7 @@ from scipy import integrate
 import matplotlib.pyplot as plt
 
 import matplotlib
-matplotlib.rcParams.update({'font.size': 16})
+matplotlib.rcParams.update({'font.size': 18})
 matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
@@ -87,7 +87,7 @@ class PowerAsymmetryDistribution(object):
                     self.fgNLA0.append(np.load(self.basedir+"A0distfNL"+str(fgnl)+".npy")[0:self.nmaps])
                     self.fgNLAi.append(np.load(self.basedir+"AidistfNL"+str(fgnl)+".npy")[0:3*self.nmaps])
                     self.fgNLA.append(np.load(self.basedir+"AdistfNL"+str(fgnl)+".npy")[0:self.nmaps])
-                    self.fgNLCls.append(np.load(self.basedir+"Cls0fNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax)].reshape(self.nmaps, self.lmax)) # 101 because the Cls are saved upto LMAX=100
+                    self.fgNLCls.append(np.load(self.basedir+"Cls0fNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)) # 101 because the Cls are saved upto LMAX=100
                 elif self.TYPE=='gNL':
                     #self.A0const=3.95E-08
                     self.A0const=7.94E-10 # this is A_\phi 
@@ -210,7 +210,7 @@ class PowerAsymmetryDistribution(object):
         plt.xlim(-0.15, 0.15)
         plt.xlabel(r'$A_i$')
         plt.ylabel(r'$p(A_i)$')
-        plt.legend()
+        plt.legend(fontsize=20)
         
     def plot_A(self, histtype="stepfilled"):
         if histtype=="step":
@@ -245,6 +245,6 @@ class PowerAsymmetryDistribution(object):
         #plt.xticks([0.02, 0.04, 0.06, 0.08, 0.10])
         plt.xlabel(r'$A$')
         plt.ylabel(r'$p(A)$')
-        plt.legend()
+        plt.legend(fontsize=20)
         
         

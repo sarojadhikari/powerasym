@@ -39,7 +39,8 @@ class gNLPowerAsymmetryDist(PowerAsymmetryDistribution):
         if self.TYPE=='gNL':
             self.TYPELABEL=r'$g_{\rm NL}$'
             
-        self.phisqs=np.load("maps50/phisq.npy")
+        self.phisqs=np.load(self.basedir+"phisq.npy")
+        self.phisq=np.mean(self.phisqs)
         
     def plot_A0(self):
         if (self.TYPE!='gNL'):
@@ -60,7 +61,7 @@ class gNLPowerAsymmetryDist(PowerAsymmetryDistribution):
             if (self.TYPE=='gNL'):
                 #plot_hist(plt, self.fgNLA0[i]-self.gA0+6*self.fgnls[i]*self.efolds*self.A0const-6*self.fgnls[i]*self.phisq, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
                 neg=np.min(self.fgNLA0[i]-self.gA0)
-                const=9*6.*self.fgnls[i]*1.5E-8
+                const=9*6.*self.fgnls[i]*self.phisq
                 #scl=6.0*self.A0const*self.Nconst*self.fgnls[i]
                 plot_hist(plt, (self.fgNLA0[i]-self.gA0+const)/(1-9.*3.*self.fgnls[i]*1.5E-8), clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
                 

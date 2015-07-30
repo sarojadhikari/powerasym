@@ -1,6 +1,7 @@
 from posterior import PosteriorfNL
 import numpy as np
 from scipy import integrate
+from scipy.stats import norm
 
 pf=PosteriorfNL()
 
@@ -23,7 +24,7 @@ class PosteriorSDfNL(PosteriorfNL):
         return self.pdf(self.fNLl(l, A, nA), self.fNLl(l, fNL60, nfNL))
     
     def pdf_multipoles(self, lmin, lmax, A60, nA, f60, nf):
-        pdfm=1.
+        pdfm=0.1
         for l in np.arange(lmin, lmax+1):
             pdfm=pdfm*self.pdfl(l, A60, nA, f60, nf)
         
@@ -39,19 +40,31 @@ class PosteriorSDfNL(PosteriorfNL):
         to get a 2D posteriro pdf in the plane (fNL, nfNL)
         """
         lmodes=lmax-lmin+1
-        f60list=np.arange(0.1, 1000., 2.)
-        nfNLlist=np.arange(-2.0, 1.0, 0.01)
+        Ndim=100
+        f60list=np.arange(0.0, 500., 500./Ndim)
+        nfNLlist=np.arange(-2.0, 2.0, 4./Ndim)
         posterior2d=np.ones((len(f60list), len(nfNLlist)))
         print np.shape(posterior2d)
         
-        post = lambda fNL,nfNL: self.pdf_multipoles(lmin, lmax, A60, nA, fNL, nfNL)
-        norm2d = integrate.nquad(post, [[0.0, 4000.],[-5.0, 5.0]])[0]
+        post1 = lambda fNL,nfNL: self.pdf_multipoles(lmin, lmax, A60, nA, fNL, nfNL)
+        postcombined = lambda fNL,nfNL: self.pdf_multipoles(lmin, lmax, A60, nA, fNL, nfNL) * self.scale_dep_fNL(50., 50., -0.3, 0.3, fNL, nfNL)
+        
+        #norm2d = integrate.nquad(postcombined, [[0.0, 1000.],[-5.0, 5.0]])[0]
+        norm2d=postcombined(50., 0.0)
         print norm2d
         
         for f in range(len(f60list)):
             for n in range(len(nfNLlist)):
-                posterior2d[f][n]=post(f60list[f], nfNLlist[n])
+                posterior2d[f][n]=postcombined(f60list[f], nfNLlist[n])
 
-        return posterior2d/norm2d
+        return f60list, nfNLlist, posterior2d/norm2d
         
+    def scale_dep_fNL(self, fNL60, sfNL60, nfNL, snfNL, fNLvalue, nfNLvalue):
+        """
+        return unnormalized 2d pdf distribution for fNL, nfNL (assuming Gaussian) and errors given
+        also take fNL distribution to be folded normal for the purpose of combing with power
+        asymmetry constraints
+        """
+        post = lambda fnl,nf: self.pdf_fold(fnl, mean=fNL60, sigma=sfNL60) * norm.pdf(nf, loc=nfNL, scale=snfNL)
+        return post(fNLvalue, nfNLvalue)
         

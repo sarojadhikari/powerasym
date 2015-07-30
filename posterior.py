@@ -160,8 +160,8 @@ class PosteriorfNL(object):
         if (ymin!=ymax):
             plt.ylim(ymin, ymax)
             
-        plt.xlabel(r"$f_{\rm NL}$")
-        plt.ylabel(r"$p(f_{\rm NL})$")
+        plt.xlabel(r"$|f_{\rm NL}|$")
+        plt.ylabel(r"$p(|f_{\rm NL}|)$")
         plt.legend(fontsize=lf)
         plt.yscale('log')
         
@@ -176,8 +176,8 @@ class PosteriorfNL(object):
         for i in range(0, len(Alist)):
             plt.plot(fNLlist, self.combined_posterior(fNLlist, Alist[i], mean=mean, sigma=sigma), linestyle=llist[i], linewidth=LW, color=clist[i], label=r"$A="+str(Alist[i])+"$")
             
-        plt.xlabel(r"$f_{\rm NL}$")
-        plt.ylabel(r"$p(f_{\rm NL})$")
+        plt.xlabel(r"$|f_{\rm NL}|$")
+        plt.ylabel(r"$p(|f_{\rm NL}|)$")
         plt.legend(loc=3, fontsize=lf)
 
     def plot_combined_posteriors_withA0(self, A=0.055, A0list=[0.0, 0.02, 0.04, 0.04],
@@ -192,9 +192,9 @@ class PosteriorfNL(object):
         fNLlist=np.append(fNLlist, np.arange(50, fNLmax, 1))
         for i in range(0, len(A0list)):
             if (A0list[i]!=0.0):
-                labl=r"$A_0="+str(A0list[i])+",\;N="+str(Nlist[i])+"$"
+                labl=r"$A_0="+str(A0list[i])+r",\;N_{\rm extra}="+str(Nlist[i])+"$"
             else:
-                labl="$A_0$ {\rm not used}"
+                labl=r"$A_0$ not used"
             self.efolds=Nlist[i]
             plt.plot(fNLlist, self.combined_posteriors_withA0(fNLlist, A, A0list[i], mean=mean, sigma=sigma), linestyle=llist[i], linewidth=LW, color=clist[i], label=labl)
             if (A0list[i]>0.0):
@@ -203,8 +203,8 @@ class PosteriorfNL(object):
                 sd=self.sddr(A)
             print sd, np.log(sd)
             
-        plt.xlabel(r"$f_{\rm NL}$")
-        plt.ylabel(r"$p(f_{\rm NL})$")
+        plt.xlabel(r"$|f_{\rm NL}|$")
+        plt.ylabel(r"$p(|f_{\rm NL}|)$")
         plt.title(r"$A="+str(A)+"$")
         plt.legend(loc=1, fontsize=lf)
     
@@ -224,7 +224,7 @@ class PosteriorfNL(object):
         plt.text(220, 0.0055, r"$2.8\sigma$")
         plt.axhline(0.001, ls="dashed", lw=1.5, color="black", alpha=0.35)
         plt.text(220, 0.0011, r"$3.3\sigma$")
-        plt.xlabel(r"$f_{\rm NL}$")
+        plt.xlabel(r"$|f_{\rm NL}|$")
         plt.ylabel(r"$p{\rm-value}$")
         plt.legend(loc=0, fontsize=lf)
         plt.ylim(1E-4, 2.)

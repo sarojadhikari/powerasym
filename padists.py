@@ -52,6 +52,7 @@ class PowerAsymmetryDistribution(object):
         self.clrs=['b', 'g', 'r', 'black']
         self.ls=[':', '--', '-', 'o']
         self.theoryplot=theory
+        self.A0const=7.94E-10
         if (self.ns==1.0):
             self.Nconst=self.efolds
         else:
@@ -59,8 +60,8 @@ class PowerAsymmetryDistribution(object):
     
     def set_fgnl(self, fgnllist):
         self.fgnls=fgnllist
-        
-    def read_data(self):
+    
+    def read_gaus_data(self):
         try:
             self.gA0=np.load(self.basedir+"A0distG.npy")
             self.gAi=np.load(self.basedir+"AidistG.npy")
@@ -70,48 +71,29 @@ class PowerAsymmetryDistribution(object):
             #self.phisq=np.load(self.basedir+"phisq.npy")
         except:
             print "cannot read the asymmetry distribution for the Gaussian case!"
-            sys.exit(1)
-        
+            sys.exit(1)        
+
+    def read_ngaus_data(self):
         if self.fgnls != None:
             self.fgNLA0=[]
             self.fgNLAi=[]
             self.fgNLA=[]
             self.fgNLCls=[]
-            
-            for fgnl in self.fgnls:
-                if self.TYPE=='fNL':
-                    self.TYPELABEL=r'$f_{\rm NL}$'
-                    self.A0const=7.94E-10 # to get sigma(A0), multiply by fNL and sqrt(N)
-                    #self.A1const=0.9*0.04621/500./2.0   # for ns=1.0
-                    self.A1const=0.0258/500. # for ns=0.965
-                    self.fgNLA0.append(np.load(self.basedir+"A0distfNL"+str(fgnl)+".npy")[0:self.nmaps])
-                    self.fgNLAi.append(np.load(self.basedir+"AidistfNL"+str(fgnl)+".npy")[0:3*self.nmaps])
-                    self.fgNLA.append(np.load(self.basedir+"AdistfNL"+str(fgnl)+".npy")[0:self.nmaps])
-                    self.fgNLCls.append(np.load(self.basedir+"Cls0fNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)) # 101 because the Cls are saved upto LMAX=100
-                elif self.TYPE=='gNL':
-                    #self.A0const=3.95E-08
-                    self.A0const=7.94E-10 # this is A_\phi 
-                    self.A1const=0.023/5000000.
-                    self.TYPELABEL=r'$g_{\rm NL}$'
-                    self.fgNLA0.append(np.load(self.basedir+"A0distgNL"+str(fgnl)+".npy")[0:self.nmaps])
-                    self.fgNLAi.append(np.load(self.basedir+"AidistgNL"+str(fgnl)+".npy")[0:3*self.nmaps])
-                    self.fgNLA.append(np.load(self.basedir+"AdistgNL"+str(fgnl)+".npy")[0:self.nmaps])
-                    self.fgNLCls.append(np.load(self.basedir+"Cls0gNL"+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax))
-                else:
-                    print "type must be fNL or gNL"
-                    sys.exit(1)
 
-    def ConvolvedPDF_A0(self, alist, sigma0, sigma):
-        """
-        return the convolution of a normal and chi2 distribution for the total PDF of
-        A0 in a gNL model
-        """
-        fn = lambda y, x, s0, s: norm.pdf(y-x, loc=0.0, scale=s0)*chi2.pdf(y, 1, scale=s)
-        cresult=[]
-        for a in alist:
-            cresult.append(integrate.quad(fn, -np.inf, 0., args=(a, sigma0, sigma,))[0]+integrate.quad(fn, 0., np.inf, args=(a, sigma0, sigma,))[0])
+            for fgnl in self.fgnls:
+                self.fgNLA0.append(np.load(self.basedir+"A0dist"+self.TYPE+str(fgnl)+".npy")[0:self.nmaps])
+                self.fgNLAi.append(np.load(self.basedir+"Aidist"+self.TYPE+str(fgnl)+".npy")[0:3*self.nmaps])
+                self.fgNLA.append(np.load(self.basedir+"Adist"+self.TYPE+str(fgnl)+".npy")[0:self.nmaps])
+                self.fgNLCls.append(np.load(self.basedir+"Cls0"+self.TYPE+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)) # 101 because the Cls are saved upto LMAX=100    
+    
+
+    def read_data(self):
+        self.read_gaus_data()
+        self.read_ngaus_data()
         
-        return np.array(cresult)
+        if self.TYPE=='fNL':
+            self.TYPELABEL=r'$f_{\rm NL}$'
+            self.A1const=0.0258/500.
 
     def plot_A0(self):
         if (self.TYPE!='gNL'):

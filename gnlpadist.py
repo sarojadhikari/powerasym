@@ -14,6 +14,8 @@ matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
 
+ALPHA=0.1
+LW=2.0
 
 class gNLPowerAsymmetryDist(PowerAsymmetryDistribution):
     def __init__(self, typ='gNL', datafolder='gnldata', NMAPS=10000, efolds=50, ns=0.965, lmax=100, theory=True):
@@ -44,9 +46,6 @@ class gNLPowerAsymmetryDist(PowerAsymmetryDistribution):
         self.phisq=np.mean(self.phisqs)
         
     def plot_A0(self):
-        if (self.TYPE!='gNL'):
-            plot_hist(plt, self.gA0, clr=self.clrs[0], alp=0.5, ht='step')
-        
         sG=np.sqrt(np.var(self.gA0))
         mG=np.mean(self.gA0)
         amin, amax=plt.xlim()
@@ -59,42 +58,23 @@ class gNLPowerAsymmetryDist(PowerAsymmetryDistribution):
             else:
                 lbl=None
             
-            if (self.TYPE=='gNL'):
-                #plot_hist(plt, self.fgNLA0[i]-self.gA0+6*self.fgnls[i]*self.efolds*self.A0const-6*self.fgnls[i]*self.phisq, clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
-                neg=np.min(self.fgNLA0[i]-self.gA0)
-                const=9*6.*self.fgnls[i]*self.phisq
-                #scl=6.0*self.A0const*self.Nconst*self.fgnls[i]
-                plot_hist(plt, (self.fgNLA0[i]-self.gA0+const)/(1-9.*3.*self.fgnls[i]*1.5E-8), clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
+            neg=np.min(self.fgNLA0[i]-self.gA0)
+            const=9*6.*self.fgnls[i]*self.phisq
+            plot_hist(plt, (self.fgNLA0[i]-self.gA0+const)/(1-9.*3.*self.fgnls[i]*self.phisq), clr=self.clrs[i+1], alp=ALPHA, labl=lbl, ht='stepfilled')
                 
             amin, amax=plt.xlim()
             alist=np.arange(3*amin, amax*3, 0.001)
             if (self.theoryplot):
-                if (self.TYPE=='fNL'):
-                    theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt(16.*self.A0const*self.Nconst*self.fgnls[i]**2.0+sG**2.0))
-                if (self.TYPE=='gNL'):
-                    scl=6.0*self.A0const*self.Nconst*self.fgnls[i]
-                    #scl=2.0*self.A0const*self.efolds*self.fgnls[i]
-                    theorynGdist=np.sign(self.fgnls[i])*chi2.pdf(alist,1, scale=scl)
-                    # new
-                    """
-                    sigmaphi00=np.sqrt(self.A0const*self.efolds)
-                    a0=24.*np.pi*self.fgnls[i]
-                    theorynGdist=1./a0/np.sqrt(2.*np.pi)/sigmaphi00 * np.sqrt(a0/(alist+a0*sigmaphi00^2))*np.exp(-(alist+a0*sigmaphi00**2.0)/(2.*a0*sigmaphi00**2.0))
-                    self.theorynGdist=theorynGdist
-                    """
-                    
+                scl=6.0*self.A0const*self.Nconst*self.fgnls[i]
+                theorynGdist=np.sign(self.fgnls[i])*chi2.pdf(alist,1, scale=scl)
                 plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
             
         plt.xlabel(r'$A_0$')
         plt.ylabel(r'$p(A_0)$')
         plt.yscale('log')
-        if (self.TYPE=='fNL'):
-            plt.xlim(-1.0, 1.0)
-            plt.ylim(0.1, 100)
-        if (self.TYPE=='gNL'):
-            #plt.xscale('log')
-            plt.ylim(0.05, 1000)
-            plt.xlim(-0.02, 0.25)
+
+        plt.ylim(0.01, 100)
+        plt.xlim(-0.02, 0.25)
         
         plt.legend()
         

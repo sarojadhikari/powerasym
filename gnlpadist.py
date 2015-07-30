@@ -101,13 +101,14 @@ class gNLPowerAsymmetryDist(PowerAsymmetryDistribution):
                 lbl=None
             
             Aiselected = self.fgNLAi[i][np.abs(self.fgNLA0[i/3])<select]
-            gAiselected = self.gAi[np.abs(self.fgNLA0[i/3]<select] 
+            gAiselected = self.gAi[np.abs(self.fgNLA0[i/3])<select] 
+            print len(Aiselected)
             
             plot_hist(plt, Aiselected - gAiselected, clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
             
             if (self.theoryplot):
-                sigmax=np.sqrt(2.*self.fgnls[i]*self.A0const*self.Nconst)
-                sigmay=np.sqrt(54.*self.fgnls[i]*2.2188E-10)
+                sigmax=np.sqrt(1.*self.fgnls[i]*self.A0const*self.Nconst)
+                sigmay=np.sqrt(54.*self.fgnls[i]*2.2188E-10*0.5)
                 theorynGdist=kn(0, np.abs(alist)/sigmax/sigmay)/np.pi/sigmax/sigmay
                     
                 plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))

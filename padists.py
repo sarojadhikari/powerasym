@@ -67,7 +67,7 @@ class PowerAsymmetryDistribution(object):
             self.gAi=np.load(self.basedir+"AidistG.npy")
             self.NSIMS=len(self.gAi)/3
             self.gA=np.load(self.basedir+"AdistG.npy")
-            self.gCls=np.load(self.basedir+"Cls0G.npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)
+            self.gCls=np.load(self.basedir+"ClsG.npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)
             #self.phisq=np.load(self.basedir+"phisq.npy")
         except:
             print "cannot read the asymmetry distribution for the Gaussian case!"
@@ -84,7 +84,7 @@ class PowerAsymmetryDistribution(object):
                 self.fgNLA0.append(np.load(self.basedir+"A0dist"+self.TYPE+str(fgnl)+".npy")[0:self.nmaps])
                 self.fgNLAi.append(np.load(self.basedir+"Aidist"+self.TYPE+str(fgnl)+".npy")[0:3*self.nmaps])
                 self.fgNLA.append(np.load(self.basedir+"Adist"+self.TYPE+str(fgnl)+".npy")[0:self.nmaps])
-                self.fgNLCls.append(np.load(self.basedir+"Cls0"+self.TYPE+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)) # 101 because the Cls are saved upto LMAX=100    
+                self.fgNLCls.append(np.load(self.basedir+"Cl0"+self.TYPE+str(fgnl)+".npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)) # 101 because the Cls are saved upto LMAX=100    
     
 
     def read_data(self):

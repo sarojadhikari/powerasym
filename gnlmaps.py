@@ -41,14 +41,15 @@ if not(usesavedmaps):
         phisq.append(np.mean(swmap.gausmap*swmap.gausmap))
     np.save(mapsdir+"phisq.npy", phisq)
 else:
-    for sim in range(SIMStart, NSIMS):
+    for sim in range(0, 10000):
         swmap=gNLSWMap(gnls=gNLlist, LMAX=LMAX, NSIDE=NSIDE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)
         phisq.append(np.mean(swmap.gausmap*swmap.gausmap))
 
+np.save(datadir+"phisq.npy")
 print np.mean(phisq)
 phisqsub=np.mean(phisq)
 
-#sys.exit(0)
+sys.exit(0)
 
 # now generate non-Gaussian maps
 if (SIMStart>0):

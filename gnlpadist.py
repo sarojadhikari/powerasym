@@ -79,11 +79,13 @@ class gNLPowerAsymmetryDist(PowerAsymmetryDistribution):
         plt.legend()
         
         
-    def plot_Ai(self, histtype="stepfilled"):
-        if histtype=="step":
-            ALPHAG=0.5
-        else:
-            ALPHAG=ALPHA
+    def plot_Ai(self, select=0.2):
+        """
+        the select option is used to choose only those data that have power modulation less than 
+        this amount i.e. if
+        abs(A0)<select
+        this is necessary to only consider skies with the power spectra as what we see.
+        """
         
         sG=np.sqrt(np.var(self.gAi.flatten()))
         print sG
@@ -91,25 +93,22 @@ class gNLPowerAsymmetryDist(PowerAsymmetryDistribution):
         amin, amax = np.min(self.gAi), np.max(self.gAi)
         alist=np.arange(2*amin, amax*2, amax/250.)
         theoryGdist=norm.pdf(alist, loc=mG, scale=sG)
-        if (self.TYPE!='gNL'):
-            plt.plot(alist, theoryGdist,self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"=0")
-            plot_hist(plt, self.gAi.flatten(), clr=self.clrs[0], alp=ALPHAG, ht=histtype)
 
         for i in range(len(self.fgnls)):
             if (self.theoryplot==False):
                 lbl=self.TYPELABEL+"="+NtoSTR(self.fgnls[i])
             else:
                 lbl=None
-                
-            plot_hist(plt, self.fgNLAi[i].flatten(), clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
+            
+            Aiselected = self.fgNLAi[i][np.abs(self.fgNLA0[i/3])<select]
+            gAiselected = self.gAi[np.abs(self.fgNLA0[i/3]<select] 
+            
+            plot_hist(plt, Aiselected - gAiselected, clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
             
             if (self.theoryplot):
-                if (self.TYPE=='fNL'):
-                    theorynGdist=norm.pdf(alist, loc=mG, scale=np.sqrt((self.A1const*self.fgnls[i])**2.0+sG**2.0))
-                elif (self.TYPE=='gNL'):
-                    sigmax0=np.sqrt(self.A0const*self.Nconst)
-                    sigmax1=8.*self.fgnls[i]*np.sqrt(3.*np.pi*self.A1const)
-                    theorynGdist=kn(0, np.abs(alist)/sigmax0/sigmax1)/np.pi/sigmax0/sigmax1
+                sigmax=np.sqrt(2.*self.fgnls[i]*self.A0const*self.Nconst)
+                sigmay=np.sqrt(54.*self.fgnls[i]*2.2188E-10)
+                theorynGdist=kn(0, np.abs(alist)/sigmax/sigmay)/np.pi/sigmax/sigmay
                     
                 plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
         

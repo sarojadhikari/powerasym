@@ -5,6 +5,7 @@ padists.py [PowerAsymmetryDistribution] for gNL
 from padists import PowerAsymmetryDistribution, NtoSTR, plot_hist
 import numpy as np
 from scipy.special import kn
+from scipy.stats import chi, norm, chi2
 
 import matplotlib.pyplot as plt
 import matplotlib

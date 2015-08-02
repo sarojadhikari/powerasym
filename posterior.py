@@ -194,7 +194,7 @@ class PosteriorfNL(object):
             if (A0list[i]!=0.0):
                 labl=r"$A_0="+str(A0list[i])+r",\;N_{\rm extra}="+str(Nlist[i])+"$"
             else:
-                labl=r"$A_0$ not used"
+                labl=r"$A_0\,{\rm not\,used}$"
             self.efolds=Nlist[i]
             plt.plot(fNLlist, self.combined_posteriors_withA0(fNLlist, A, A0list[i], mean=mean, sigma=sigma), linestyle=llist[i], linewidth=LW, color=clist[i], label=labl)
             if (A0list[i]>0.0):

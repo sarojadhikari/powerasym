@@ -227,5 +227,5 @@ class PosteriorfNL(object):
         plt.xlabel(r"$|f_{\rm NL}|$")
         plt.ylabel(r"$p{\rm-value}$")
         plt.legend(loc=0, fontsize=lf)
-        plt.ylim(1E-4, 2.)
+        plt.ylim(1.1E-4, 1.1)
         plt.yscale('log')

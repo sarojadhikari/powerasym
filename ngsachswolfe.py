@@ -1,18 +1,12 @@
 """
 Created on Fri Apr 10 14:54:45 2015
 
-local non-gaussianity and modulations. 
-for scale invariant power spectrum with amplitude A (Bardeen potential):
-l(l+1)/2pi C_l = A/9 = constant
-A(\phi) = (3./5)^2 * 2.2 x 10^{-9}   (Planck 2015)
-
-The expression for non-scale invariant case is slightly more complicated, but
-has analytic form in terms of gamma functions.
-
 Since we are subsampling a larger universe to CMB skies of the size of our
 observable universe, we need to keep the C_0 and C_1 terms, as we want to
 study possible monopole and dipole modulations.
 
+in the local non-Gaussian model, since the L=0 and L=1 modulations are independent,
+we can only include C_1 terms to study the dipole modulations.
 @author: sarojadhikari
 """
 import numpy as np

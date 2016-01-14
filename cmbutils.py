@@ -1,7 +1,7 @@
 import healpy as hp
 import numpy as np
 
-def get_hem_Cls(skymap, direction, LMAX=256):
+def get_hem_Cls(skymap, direction, LMAX=256, deg=90.):
     """
     from the given healpix skymap, return Cls for two hemispheres defined by the
     direction given, useful to study the possible scale dependence of power modulation
@@ -12,13 +12,20 @@ def get_hem_Cls(skymap, direction, LMAX=256):
     NPIX=len(skymap)
     NSIDE=hp.npix2nside(NPIX)
     maskp=np.array([0.]*NPIX)
-    disc=hp.query_disc(nside=NSIDE, vec=direction, radius=0.0174532925*90.)
+    disc=hp.query_disc(nside=NSIDE, vec=direction, radius=0.0174532925*deg)
     maskp[disc]=1.
     #skymap=hp.remove_monopole(skymap)
     map1=hp.ma(skymap)
     map1.mask=maskp
     Clsp=hp.anafast(map1, lmax=LMAX)
-    map1.mask=np.logical_not(maskp)
+    if (deg<90.):
+        maskm=np.array([0.]*NPIX)
+        disc=hp.query_disc(nside=NSIDE, vec=-direction, radius=0.0174532925*deg)
+        maskm[disc]=1.
+        map1.mask=maskm
+    else:
+        map1.mask=np.logical_not(maskp)
+        
     Clsm=hp.anafast(map1, lmax=LMAX)
 
     return [Clsp, Clsm]  
@@ -40,18 +47,17 @@ def weightedA(Clp, Cln):
     num=np.sum([(2*i+1)*(Clp[i]-Cln[i])/(Clp[i]+Cln[i]) for i in ls])
     return num/total
 
-def Ais(map1, LMAX):
+def Ais(map1, LMAX, deg=90.):
     """
     get the Cl power asymmetry in a particular direction 
     """
     dir1=np.array([1.,0.,0.])
-    dir2=np.array([0.,1.,0.])
+    dir2=np.array([0.,-1.,0.])
     dir3=np.array([0.,0.,1.])
     dirs=[dir1, dir2, dir3]
     A123=[]
-    
     for direction in dirs:
-        Clsp, Clsm = get_hem_Cls(map1, direction, LMAX)
+        Clsp, Clsm = get_hem_Cls(map1, direction, LMAX, deg)
         A123.append(weightedA(Clsp[2:],Clsm[2:]))
         
     return A123

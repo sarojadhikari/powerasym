@@ -103,9 +103,7 @@ class SachsWolfeMap(object):
         inpCls=self.inputCls[:self.lmax+1]
         
         if (self.gausmap0!=None):
-            #self.gausCls0=hp.anafast(self.gausmap0, lmax=self.lmax)
             self.gausCls0=hp.alm2cl(self.gausalm0)[0:self.lmax+1]
-            #self.gausCls1=hp.anafast(self.gausmap1, lmax=self.lmax)
             self.gausCls1=hp.alm2cl(self.gausalm1)[0:self.lmax+1]
             self.gausA0=get_A0(self.gausCls0[1:], inpCls[1:])
             self.gausAi=Ais(self.gausmap1, self.lmax); self.gausA=AistoA(self.gausAi)

@@ -9,7 +9,7 @@ from scipy.stats import chi, norm, foldnorm
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.rcParams.update({'font.size': 18})
-matplotlib.rcParams.update({'figure.autolayout': True})
+matplotlib.rcParams.update({'figure.autolayout': False})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
 lf=18                      
@@ -150,7 +150,7 @@ class PosteriorfNL(object):
     def plot_posteriors(self, Alist=[0.0, 0.04, 0.055, 0.06], 
                               llist=["dashed", "dashdot", "dotted", "solid"],
                               clist=["black", "red", "blue", "green"],
-                              LW=2.5, fNLmax=2000, ymin=5E-6, ymax=5E-6, ALP=0.02):
+                              LW=2.5, fNLmax=2000, ymin=2E-6, ymax=5E-6, ALP=0.02):
         """
         plot multiple posterior curves
         """
@@ -201,7 +201,7 @@ class PosteriorfNL(object):
                 sd=self.sddr_withA0(A, A0list[i], Nlist[i])
             else:
                 sd=self.sddr(A)
-            print sd, np.log(sd)
+            print (sd, np.log(sd))
             
         plt.xlabel(r"$|f_{\rm NL}|$")
         plt.ylabel(r"$p(|f_{\rm NL}|)$")
@@ -227,5 +227,5 @@ class PosteriorfNL(object):
         plt.xlabel(r"$|f_{\rm NL}|$")
         plt.ylabel(r"$p{\rm-value}$")
         plt.legend(loc=0, fontsize=lf)
-        plt.ylim(1.1E-4, 1.1)
+        plt.ylim(1E-4, 1.)
         plt.yscale('log')

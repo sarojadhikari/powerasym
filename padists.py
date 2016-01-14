@@ -14,12 +14,13 @@ import matplotlib.pyplot as plt
 
 import matplotlib
 matplotlib.rcParams.update({'font.size': 18})
+#matplotlib.rcParams.update({'font.weight': 'bold'})
 matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
 
-ALPHA=0.1
-LW=2.0
+ALPHA=0.15
+LW=2.5
 
 def plot_hist(pls, data, BINS=50, ht='stepfilled', clr='b', labl="", alp=0.1):
     pls.hist(data, histtype=ht, bins=BINS, normed=True, color=clr, label=labl, linewidth=LW, alpha=alp)
@@ -70,7 +71,7 @@ class PowerAsymmetryDistribution(object):
             #self.gCls=np.load(self.basedir+"ClsG.npy")[0:self.nmaps*(self.lmax+1)].reshape(self.nmaps, self.lmax+1)
             #self.phisq=np.load(self.basedir+"phisq.npy")
         except:
-            print "cannot read the asymmetry distribution for the Gaussian case!"
+            print ("cannot read the asymmetry distribution for the Gaussian case!")
             sys.exit(1)        
 
     def read_ngaus_data(self):
@@ -94,10 +95,19 @@ class PowerAsymmetryDistribution(object):
         if self.TYPE=='fNL':
             self.TYPELABEL=r'$f_{\rm NL}$'
             self.A1const=0.0258/500.
+        
+    def get_LW1(self, i):
+        if (self.ls[i+1]=="-"):
+            LW1=1.5
+        elif (self.ls[i+1]=="--"):
+            LW1=2.0
+        else:
+            LW1=LW
+        return LW1
 
     def plot_A0(self):
         if (self.TYPE!='gNL'):
-            plot_hist(plt, self.gA0, clr=self.clrs[0], alp=0.5, ht='step')
+            plot_hist(plt, self.gA0, clr="skyblue", alp=ALPHA, ht='stepfilled')
         
         sG=np.sqrt(np.var(self.gA0))
         mG=np.mean(self.gA0)
@@ -138,8 +148,9 @@ class PowerAsymmetryDistribution(object):
                     theorynGdist=1./a0/np.sqrt(2.*np.pi)/sigmaphi00 * np.sqrt(a0/(alist+a0*sigmaphi00^2))*np.exp(-(alist+a0*sigmaphi00**2.0)/(2.*a0*sigmaphi00**2.0))
                     self.theorynGdist=theorynGdist
                     """
+                LW1=self.get_LW1(i)
                     
-                plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
+                plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW1, label=self.TYPELABEL+"$=$"+NtoSTR(self.fgnls[i]))
             
         plt.xlabel(r'$A_0$')
         plt.ylabel(r'$p(A_0)$')
@@ -162,14 +173,14 @@ class PowerAsymmetryDistribution(object):
             ALPHAG=ALPHA
         
         sG=np.sqrt(np.var(self.gAi.flatten()))
-        print sG
+        print (sG)
         mG=np.mean(self.gAi.flatten())
         amin, amax = np.min(self.gAi), np.max(self.gAi)
         alist=np.arange(2*amin, amax*2, amax/250.)
         theoryGdist=norm.pdf(alist, loc=mG, scale=sG)
         if (self.TYPE!='gNL'):
-            plt.plot(alist, theoryGdist,self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"=0")
-            plot_hist(plt, self.gAi.flatten(), clr=self.clrs[0], alp=ALPHAG, ht=histtype)
+            plt.plot(alist, theoryGdist,self.clrs[0], linestyle=self.ls[0], linewidth=LW, label=self.TYPELABEL+"$=0$")
+            plot_hist(plt, self.gAi.flatten(), clr="skyblue", alp=ALPHA, ht=histtype)
 
         for i in range(len(self.fgnls)):
             if (self.theoryplot==False):
@@ -186,8 +197,10 @@ class PowerAsymmetryDistribution(object):
                     sigmax0=np.sqrt(self.A0const*self.Nconst)
                     sigmax1=8.*self.fgnls[i]*np.sqrt(3.*np.pi*self.A1const)
                     theorynGdist=kn(0, np.abs(alist)/sigmax0/sigmax1)/np.pi/sigmax0/sigmax1
-                    
-                plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
+                
+                LW1=self.get_LW1(i)
+                        
+                plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW1, label=self.TYPELABEL+"$=$"+NtoSTR(self.fgnls[i]))
         
         plt.xlim(-0.15, 0.15)
         plt.xlabel(r'$A_i$')
@@ -200,7 +213,7 @@ class PowerAsymmetryDistribution(object):
         else:
             ALPHAG=ALPHA
             
-        plot_hist(plt, self.gA, clr=self.clrs[0], alp=ALPHAG, ht=histtype)
+        plot_hist(plt, self.gA, clr="skyblue", alp=ALPHA, ht=histtype)
 
         sG=np.sqrt(np.var(self.gAi))
         mG=np.mean(self.gAi)
@@ -211,15 +224,17 @@ class PowerAsymmetryDistribution(object):
 
         for i in range(len(self.fgnls)):
             if (self.theoryplot==False):
-                lbl=self.TYPELABEL+"="+NtoSTR(self.fgnls[i])
+                lbl=self.TYPELABEL+"$=$"+NtoSTR(self.fgnls[i])
             else:
                 lbl=None
                 
             plot_hist(plt, self.fgNLA[i], clr=self.clrs[i+1], alp=ALPHA, labl=lbl)
             
             if (self.theoryplot):
+                LW1=self.get_LW1(i)
+                    
                 theorynGdist=chi.pdf(alist, 3, scale=np.sqrt((self.A1const*self.fgnls[i])**2.0+sG**2.0))
-                plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW, label=self.TYPELABEL+"="+NtoSTR(self.fgnls[i]))
+                plt.plot(alist, theorynGdist, self.clrs[i+1], linestyle=self.ls[i+1], linewidth=LW1, label=self.TYPELABEL+"$=$"+NtoSTR(self.fgnls[i]))
         
         # theory plots
         

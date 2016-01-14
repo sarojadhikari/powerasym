@@ -4,13 +4,13 @@ import numpy as np
 import healpy as hp
 from ngsachswolfe import SachsWolfeMap
 
-NSIMS=1000
+NSIMS=300
 LMAX=100
 NSIDE=128
 NEFOLDS=40  #
 
 mapsdir="maps"+str(NEFOLDS)+"/"
-datadir="data"+str(NEFOLDS)+"/"
+datadir="data45"+str(NEFOLDS)+"/"
 
 if not os.path.exists(datadir):
     os.makedirs(datadir)
@@ -19,7 +19,7 @@ if not os.path.exists(mapsdir):
     
 NODIPOLE=False
 
-fNLlist=[250, 500, -250, -500]
+fNLlist=[250, 500]
 NfNL=len(fNLlist)
 #gNL=700000000
 
@@ -64,7 +64,7 @@ for sim in range(NSIMS):
     
     swmap.generate_fnl_maps(phisqsub0, phisqsub1)
     #swmap.generate_gnl_map(phisqsub0, phisqsub1)
-    swmap.calculate()
+    swmap.calculate(deg=45.)
 
     A0G.append(swmap.gausA0)
     AG.append(swmap.gausA)

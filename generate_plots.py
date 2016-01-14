@@ -2,18 +2,19 @@
 script to generate useful plots
 """
 import sys
-import numpy as np
+#import numpy as np
 import matplotlib.pyplot as plt
 
 import matplotlib
 matplotlib.rcParams.update({'font.size': 18})
-matplotlib.rcParams.update({'figure.autolayout': True})
+matplotlib.rcParams.update({'figure.autolayout': False})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
 #matplotlib.rc('tick_params', color="gray")
 matplotlib.rc('axes', edgecolor="gray")
 
 from padists import PowerAsymmetryDistribution
+import prettyplotlib as ppl
 
 MAPS=10000
 
@@ -29,14 +30,14 @@ def figurebox(xs=xsize, ys=ysize):
 pad = PowerAsymmetryDistribution(NMAPS=MAPS)
 pad.set_fgnl([250, 500]); pad.read_data()
 figurebox()
-pad.plot_A(histtype='step')
+pad.plot_A(histtype='stepfilled')
 plt.xlim(0.0, 0.12)
 plt.yticks([0, 10, 20, 30, 40])
 plt.savefig("plots/Adist.pdf")
 plt.close()
 
 figurebox()
-pad.plot_Ai(histtype='step')
+pad.plot_Ai(histtype='stepfilled')
 plt.xlim(-0.1, 0.1)
 plt.ylim(0.0, 32)
 plt.yticks([0, 10, 20, 30])
@@ -52,6 +53,7 @@ plt.title(r"$N_{\rm extra}="+str(pad.efolds)+"$", y=1.02)
 plt.savefig("plots/A0fNL.pdf")
 plt.close()
 
+#sys.exit(0)
 
 # generate posterior plots
 # ========================
@@ -59,13 +61,18 @@ from posterior import PosteriorfNL
 
 pf = PosteriorfNL()
 figurebox()
-pf.plot_posteriors(ymax=0.01)
+pf.plot_posteriors(ymax=0.02)
+plt.xticks([0, 400, 800, 1200, 1600, 2000])
+plt.tight_layout()
 plt.savefig("plots/posteriorA1.pdf")
-plt.close
+plt.close()
+
 
 figurebox()
 pf.plot_pvalues()
 plt.xlim(0, 500)
+plt.ylim(2.E-4, 2.0)
+plt.tight_layout()
 plt.savefig("plots/pvalues.pdf")
 plt.close()
 
@@ -73,10 +80,12 @@ figurebox()
 pf.plot_combined_posteriors()
 plt.xlim(0, 500)
 plt.yscale('log')
-plt.ylim(1E-5, 0.01)
+plt.ylim(2E-5, 0.02)
+plt.tight_layout()
 plt.savefig("plots/comb_posteriors.pdf")
 plt.close()
 
+sys.exit(0)
 figurebox()
 pf.plot_combined_posteriors_withA0(A0list=[0.0, 0.02, 0.04, 0.04], Nlist=[10, 50, 50, 100])
 plt.legend(loc=0, fontsize=18)

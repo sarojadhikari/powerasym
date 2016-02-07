@@ -1,5 +1,5 @@
 # Power Asymmetry from non-Gaussian Modulation #
-![map.jpg](https://bitbucket.org/repo/z6nqrA/images/1953787350-map.jpg)
+![map.jpg](https://github.com/sarojadhikari/powerasym/blob/master/figures/map.jpg)
 
 This project contains the code necessary to produce some of the numerical results in the paper [arXiv:1508.06489](http://arxiv.org/abs/1508.06489), in which we extrapolate the power spectrum to superhorizon scales and show that the presence of the background density dipole, in the presence of large enough local type non-Gaussianity, generates a power asymmetry in the CMB power spectrum.
 

@@ -16,12 +16,11 @@ if not os.path.exists(datadir):
     os.makedirs(datadir)
 if not os.path.exists(mapsdir):
     os.makedirs(mapsdir)
-    
+
 NODIPOLE=False
 
 fNLlist=[250, 500]
 NfNL=len(fNLlist)
-#gNL=700000000
 
 usesavedmaps=True
 #usesavedmaps=False
@@ -61,9 +60,8 @@ phisqsub0=np.mean(phisq0); phisqsub1=np.mean(phisq1) # global
 for sim in range(NSIMS):
     print sim
     swmap=SachsWolfeMap(fnls=fNLlist, LMAX=LMAX, NSIDE=NSIDE, nodipole=NODIPOLE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)
-    
+
     swmap.generate_fnl_maps(phisqsub0, phisqsub1)
-    #swmap.generate_gnl_map(phisqsub0, phisqsub1)
     swmap.calculate(deg=45.)
 
     A0G.append(swmap.gausA0)
@@ -74,7 +72,7 @@ for sim in range(NSIMS):
     Ai2G.append(swmap.gausAi2)
     Cl0G.append(swmap.gausCls0)
     Cl1G.append(swmap.gausCls1)
-    
+
     for i in range(NfNL):
         A0fNL[i].append(swmap.fnlA0[i])
         AfNL[i].append(swmap.fnlA[i])
@@ -84,8 +82,8 @@ for sim in range(NSIMS):
         Ai2fNL[i].append(swmap.fnlAi2[i])
         Cl0fNL[i].append(swmap.fnlCls0[i])
         Cl1fNL[i].append(swmap.fnlCls1[i])
-        
-# SAVE 
+
+# SAVE
 np.save(datadir+"A0distG.npy", A0G)
 np.save(datadir+"AdistG.npy", AG)
 np.save(datadir+"AidistG.npy", AiG)

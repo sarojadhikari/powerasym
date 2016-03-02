@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.rcParams.update({'font.size': 18})
 #matplotlib.rcParams.update({'font.weight': 'bold'})
-matplotlib.rcParams.update({'figure.autolayout': True})
+#matplotlib.rcParams.update({'figure.autolayout': True})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
 

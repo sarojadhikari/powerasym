@@ -1,8 +1,7 @@
 """
-script to generate useful plots
+script to generate useful plots and save them
 """
 import sys
-#import numpy as np
 import matplotlib.pyplot as plt
 
 import matplotlib
@@ -10,11 +9,9 @@ matplotlib.rcParams.update({'font.size': 18})
 matplotlib.rcParams.update({'figure.autolayout': False})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
-#matplotlib.rc('tick_params', color="gray")
 matplotlib.rc('axes', edgecolor="gray")
 
 from padists import PowerAsymmetryDistribution
-import prettyplotlib as ppl
 
 MAPS=10000
 
@@ -53,8 +50,6 @@ plt.title(r"$N_{\rm extra}="+str(pad.efolds)+"$", y=1.02)
 plt.savefig("plots/A0fNL.pdf")
 plt.close()
 
-#sys.exit(0)
-
 # generate posterior plots
 # ========================
 from posterior import PosteriorfNL
@@ -66,7 +61,6 @@ plt.xticks([0, 400, 800, 1200, 1600, 2000])
 plt.tight_layout()
 plt.savefig("plots/posteriorA1.pdf")
 plt.close()
-
 
 figurebox()
 pf.plot_pvalues()

@@ -12,7 +12,6 @@ matplotlib.rcParams.update({'font.size': 18})
 matplotlib.rcParams.update({'figure.autolayout': False})
 matplotlib.rcParams.update({'ytick.major.pad': 9})
 matplotlib.rcParams.update({'xtick.major.pad': 7})
-lf=18
 
 class PosteriorfNL(object):
     """
@@ -25,6 +24,8 @@ class PosteriorfNL(object):
         self.sigmaG=0.0137876
         self.sigma0G=0.0142527
         self.Nconst=1.2135*(1.0-np.exp(-(self.ns-1)*self.efolds))/(self.ns-1)
+
+        self.lf = 18
 
     def pdf(self, A, fNL):
         """
@@ -169,7 +170,7 @@ class PosteriorfNL(object):
 
         plt.xlabel(r"$|f_{\rm NL}|$")
         plt.ylabel(r"$p(|f_{\rm NL}|)$")
-        plt.legend(loc=3, fontsize=lf)
+        plt.legend(loc=3, fontsize=self.lf)
 
     def plot_combined_posteriors_withA0(self, A=0.055, A0list=[0.0, 0.02, 0.04, 0.04],
                                         Nlist=[10, 50, 50, 100],
@@ -192,12 +193,12 @@ class PosteriorfNL(object):
                 sd=self.sddr_withA0(A, A0list[i], Nlist[i])
             else:
                 sd=self.sddr(A)
-            print (sd, np.log(sd))
+            #print (sd, np.log(sd))
 
         plt.xlabel(r"$|f_{\rm NL}|$")
         plt.ylabel(r"$p(|f_{\rm NL}|)$")
         plt.title(r"$A="+str(A)+"$")
-        plt.legend(loc=1, fontsize=lf)
+        plt.legend(loc=1, fontsize=self.lf)
 
     def plot_pvalue(self, A, ls="solid", lw=2, clr="b", fNLmin=0, fNLmax=500):
         fNLlist=np.arange(fNLmin, fNLmax, 1)
@@ -217,6 +218,6 @@ class PosteriorfNL(object):
         plt.text(220, 0.0011, r"$3.3\sigma$")
         plt.xlabel(r"$|f_{\rm NL}|$")
         plt.ylabel(r"$p{\rm-value}$")
-        plt.legend(loc=0, fontsize=lf)
+        plt.legend(loc=0, fontsize=self.lf)
         plt.ylim(1E-4, 1.)
         plt.yscale('log')

@@ -74,15 +74,8 @@ def local_variance_map(map1, mask1, deg):
 
 def remove_low_l(map1, mask1, LMAX):
     """ return low_l removed map(masked)
+    look at sharpl.py
     """
-    mp1=hp.ma(map1)
-    mp1.mask=np.logical_not(mask1)
-    NSIDE1=hp.npix2nside(len(map1))
-    alms=hp.map2alm(mp1, lmax=3072)
-    alms[0:(LMAX+1)*(LMAX+2)/2]=0.
-    newmap=hp.ma(hp.alm2map(alms, nside=NSIDE1))
-    newmap.mask=np.logical_not(mask1)
-    return newmap
 
 def cos_modulation_map(nside, dvec):
     NSIDE=nside

@@ -2,7 +2,7 @@
 """
 import numpy as np
 import healpy as hp
-from cmbutils import get_hem_Cls, Ais, AistoA, get_dipole, get_A0
+from powerasym.cmbutils import get_hem_Cls, Ais, AistoA, get_dipole, get_A0
 from scipy.special import gamma, gammaln    #gammaln useful for large l, gamma(l) is too large
 
 class gNLSWMap(object):
@@ -13,7 +13,7 @@ class gNLSWMap(object):
         * LMAX   is the maximum l to be used to compute power asymmetry and other quantities whereas
                  the maps are generated using LMAX*3 multipoles
         * N      is the number of extra efolds assumed for C_0 calculation, if N=0, C0=0.0
-        """  
+        """
         self.gausmap=None
         self.gnls=gnls
         self.Ngnls=len(gnls)
@@ -24,7 +24,7 @@ class gNLSWMap(object):
         self.mapsdir=mapsdir
         self.get_SWCls()
         self.generate_gaus_map(readGmap)
-    
+
     def generate_gaus_map(self, readGmap=-1):
         if (readGmap<0):
             self.gausalm=hp.synalm(self.inputCls)
@@ -36,22 +36,22 @@ class gNLSWMap(object):
             C050=(1.0-np.exp(-(ns-1)*50))/(ns-1)
             alm0r=np.sqrt(C0N/C050)
             self.gausalm[0]=self.gausalm[0]*alm0r
-                        
+
         self.gausmap=hp.alm2map(self.gausalm, nside=self.NSIDE) # includes the monopole bit
-    
+
     def save_gaus_map(self, mapN):
         #print "for the gNL we will use the maps generated earlier, so no need to save"
-        print "writing "+str(mapN)
+        print ("writing "+str(mapN))
         hp.write_alm(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausalm)
-    
+
     def generate_gnl_maps(self, phisq=0.):
         self.gnlmaps=[]
-        
+
         cubemap=np.power(self.gausmap, 3.0)
-        
+
         for i in range(self.Ngnls):
             self.gnlmaps.append(self.gausmap+9.*self.gnls[i]*(cubemap-3.0*phisq*self.gausmap))
-                    
+
     def get_SWCls(self, Aphi=7.94E-10, ns=0.965):
         """
         return the Cl value at a multipole assuming scale independent power spectrum
@@ -68,7 +68,7 @@ class gNLSWMap(object):
             C0factor=k0rcmbfactor*4.*np.pi*Aphi/9.0
             C0=C0factor*(1.0-np.exp(-(ns-1)*self.efolds))/(ns-1)
         self.inputCls=np.append(C0, self.inputCls)
-            
+
     def calculate(self):
         """
         calculate various properties of the gaussian, fnl, gnl maps i.e. compute
@@ -78,22 +78,21 @@ class gNLSWMap(object):
         * dipoles using remove_dipole
         """
         inpCls=self.inputCls[:self.lmax+1]
-        
+
         if (self.gausmap!=None):
             self.gausCls=hp.alm2cl(self.gausalm)[0:self.lmax+1]
             self.gausA0=get_A0(self.gausCls[1:], inpCls[1:])
             self.gausAi=Ais(self.gausmap, self.lmax); self.gausA=AistoA(self.gausAi)
             self.gausmp=hp.remove_monopole(self.gausmap, fitval=True)[1]
             self.gausdipole=get_dipole(self.gausmap)
-            
+
         if (self.gnlmaps!=None):
             self.gnlCls=[]; self.gnlA0=[]; self.gnlAi=[]
             self.gnlmp=[]; self.gnldipole=[]; self.gnlA=[]
-            
+
             for i in range(self.Ngnls):
                 self.gnlCls.append(hp.anafast(self.gnlmaps[i], nspec=self.lmax))
                 self.gnlA0.append(get_A0(self.gnlCls[i][1:], inpCls[1:]))
                 self.gnlAi.append(Ais(self.gnlmaps[i], self.lmax)); self.gnlA.append(AistoA(self.gnlAi[i]))
                 self.gnlmp.append(hp.remove_monopole(self.gnlmaps[i], fitval=True)[1])
                 self.gnldipole.append(get_dipole(self.gnlmaps[i]))
-        

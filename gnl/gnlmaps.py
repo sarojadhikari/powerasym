@@ -8,7 +8,7 @@ SIMStart=0
 NSIMS=5000
 LMAX=100
 NSIDE=128
-NEFOLDS=150  #
+NEFOLDS=50  #
 
 mapsdir="maps50/"
 datadir="gnldata"+str(NEFOLDS)+"/"
@@ -17,11 +17,11 @@ if not os.path.exists(datadir):
     os.makedirs(datadir)
 if not os.path.exists(mapsdir):
     os.makedirs(mapsdir)
-    
+
 gNLlist=[1000, 10000, 100000, 1000000]
 NgNL=len(gNLlist)
 
-usesavedmaps=True
+usesavedmaps=False
 
 A0G=[]; A0gNL=[[] for i in range(NgNL)]
 AG=[]; AgNL=[[] for i in range(NgNL)]
@@ -46,7 +46,7 @@ else:
         phisq.append(np.mean(swmap.gausmap*swmap.gausmap))
 
 np.save(datadir+"phisq.npy")
-print np.mean(phisq)
+print (np.mean(phisq))
 phisqsub=np.mean(phisq)
 
 sys.exit(0)
@@ -59,7 +59,7 @@ if (SIMStart>0):
         AiG=np.load(datadir+"AidistG.npy")[:SIMStart]
         dG=np.load(datadir+"dipolesG.npy")[:SIMStart]
         ClG=np.load(datadir+"ClsG.npy")[:SIMStart]
-    
+
         for i in range(NgNL):
             A0gNL[i]=np.load(datadir+"A0distgNL"+str(gNLlist[i])+".npy")[:SIMStart]
             AgNL[i]=np.load(datadir+"AdistgNL"+str(gNLlist[i])+".npy")[:SIMStart]
@@ -67,11 +67,11 @@ if (SIMStart>0):
             dgNL[i]=np.load(datadir+"dipolesgNL"+str(gNLlist[i])+".npy")[:SIMStart]
             ClgNL[i]=np.load(datadir+"ClsgNL"+str(gNLlist[i])+".npy")[:SIMStart]
     except:
-        print "could not read all the saved files"
+        print ("could not read all the saved files")
 
 for sim in range(SIMStart, NSIMS):
-    print sim
-    swmap=gNLSWMap(gnls=gNLlist, LMAX=LMAX, NSIDE=NSIDE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)    
+    print (sim)
+    swmap=gNLSWMap(gnls=gNLlist, LMAX=LMAX, NSIDE=NSIDE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)
     swmap.generate_gnl_maps(phisqsub)
     swmap.calculate()
 
@@ -80,15 +80,15 @@ for sim in range(SIMStart, NSIMS):
     AiG=np.append(AiG, swmap.gausAi)
     dG=np.append(dG, swmap.gausdipole)
     ClG=np.append(ClG, swmap.gausCls)
-    
+
     for i in range(NgNL):
         A0gNL[i]=np.append(A0gNL[i], swmap.gnlA0[i])
         AgNL[i]=np.append(AgNL[i], swmap.gnlA[i])
         AigNL[i]=np.append(AigNL[i], swmap.gnlAi[i])
         dgNL[i]=np.append(dgNL[i], swmap.gnldipole[i])
         ClgNL[i]=np.append(ClgNL[i], swmap.gnlCls[i])
-        
-# SAVE 
+
+# SAVE
 np.save(datadir+"A0distG.npy", A0G)
 np.save(datadir+"AdistG.npy", AG)
 np.save(datadir+"AidistG.npy", AiG)

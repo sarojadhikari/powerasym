@@ -83,7 +83,7 @@ def cos_modulation_map(nside, dvec):
     mmap=[np.dot(dvec, hp.pix2vec(NSIDE,i)) for i in range(NPIX)]
     return mmap
 
-def add_doppler(map1, A, mmap):
+def add_doppler(map1, A, dvec):
     """ return a map that has the doppler dipole added to the temperature map given by the amplitude A and direction (angle); the amplitdue A should inlclude the frequency dependent boost factor b_nu.
     """
     NPIX=len(map1)

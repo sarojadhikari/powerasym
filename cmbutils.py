@@ -15,18 +15,18 @@ def get_hem_Cls(skymap, direction, LMAX=256, deg=90.):
     disc=hp.query_disc(nside=NSIDE, vec=direction, radius=0.0174532925*deg)
     maskp[disc]=1.
     #skymap=hp.remove_monopole(skymap)
-    map1=hp.ma(skymap)
-    map1.mask=maskp
-    Clsp=hp.anafast(map1, lmax=LMAX)
+    map1=hp.ma(skymap);
+    map1.mask=maskp;
+    Clsp=hp.anafast(map1, lmax=LMAX);
     if (deg<90.):
         maskm=np.array([0.]*NPIX)
-        disc=hp.query_disc(nside=NSIDE, vec=-direction, radius=0.0174532925*deg)
+        disc=hp.query_disc(nside=NSIDE, vec=-direction, radius=0.0174532925*deg);
         maskm[disc]=1.
-        map1.mask=maskm
+        map1.mask=maskm;
     else:
-        map1.mask=np.logical_not(maskp)
+        map1.mask=np.logical_not(maskp);
 
-    Clsm=hp.anafast(map1, lmax=LMAX)
+    Clsm=hp.anafast(map1, lmax=LMAX);
 
     return [Clsp, Clsm]
 
@@ -41,10 +41,12 @@ def get_A0(Clrealization, Clinput):
     A0sum=np.sum([(2*i+1)*(Clrealization[i]/Clinput[i]-1) for i in range(1, NCls1)])
     return A0sum/total
 
-def weightedA(Clp, Cln):
-    ls=range(len(Clp))
-    total=np.sum([2*i+1 for i in ls])
-    num=np.sum([(2*i+1)*(Clp[i]-Cln[i])/(Clp[i]+Cln[i]) for i in ls])
+def weightedA(Clp, Cln, al=0):
+    ls = range(len(Clp))
+    if al==0:
+        al=range(len(Clp))
+    total=np.sum([2*al[i]+1 for i in ls])
+    num=np.sum([(2*al[i]+1)*(Clp[i]-Cln[i])/(Clp[i]+Cln[i]) for i in ls])
     return num/total
 
 def Ais(map1, LMAX, deg=90.):
@@ -57,7 +59,7 @@ def Ais(map1, LMAX, deg=90.):
     dirs=[dir1, dir2, dir3]
     A123=[]
     for direction in dirs:
-        Clsp, Clsm = get_hem_Cls(map1, direction, LMAX, deg)
+        Clsp, Clsm = get_hem_Cls(map1, direction, LMAX, deg);
         A123.append(weightedA(Clsp[2:],Clsm[2:]))
 
     return A123
@@ -73,3 +75,11 @@ def get_dipole(map1):
         ddir=hp.remove_dipole(map1, uw, fitval=True)[2]
 
     return ddir
+
+def cmb_parity(Cls, lmax=28):
+    n_plus = np.sum(np.array([(1+(-1)**l) for l in range(2, lmax)]))
+    n_minus = np.sum(np.array([(1-(-1)**l) for l in range(2, lmax)]))
+    p_plus = np.sum(np.array([(1+(-1)**l)*l*(l+1)/(4.*np.pi)*Cls[l] for l in range(2, lmax)]))/n_plus
+    p_minus= np.sum(np.array([(1-(-1)**l)*l*(l+1)/(4.*np.pi)*Cls[l] for l in range(2, lmax)]))/n_minus
+    #print (p_plus, p_minus)
+    return p_minus/p_plus

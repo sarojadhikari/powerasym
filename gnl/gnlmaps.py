@@ -4,7 +4,7 @@ import numpy as np
 import healpy as hp
 from ngSWgNL import gNLSWMap
 
-SIMStart=0
+SIMStart=1000
 NSIMS=5000
 LMAX=100
 NSIDE=128
@@ -21,7 +21,7 @@ if not os.path.exists(mapsdir):
 gNLlist=[1000, 10000, 100000, 1000000]
 NgNL=len(gNLlist)
 
-usesavedmaps=False
+usesavedmaps=True
 
 A0G=[]; A0gNL=[[] for i in range(NgNL)]
 AG=[]; AgNL=[[] for i in range(NgNL)]
@@ -35,7 +35,7 @@ phisq=[]
 # first either generate all the Gaussian maps or get the maps and compute <phi^2>
 if not(usesavedmaps):
     #print "use saved maps for gNL"
-    for sim in range(SIMStart, NSIMS):
+    for sim in range(SIMStart, NSIMS+SIMStart):
         swmap=gNLSWMap(gnls=gNLlist, LMAX=LMAX, NSIDE=NSIDE, mapsdir=mapsdir, N=NEFOLDS)
         swmap.save_gaus_map(sim)
         phisq.append(np.mean(swmap.gausmap*swmap.gausmap))
@@ -45,11 +45,11 @@ else:
         swmap=gNLSWMap(gnls=gNLlist, LMAX=LMAX, NSIDE=NSIDE, readGmap=sim, mapsdir=mapsdir, N=NEFOLDS)
         phisq.append(np.mean(swmap.gausmap*swmap.gausmap))
 
-np.save(datadir+"phisq.npy")
+np.save(datadir+"phisq.npy", phisq)
 print (np.mean(phisq))
 phisqsub=np.mean(phisq)
 
-sys.exit(0)
+#sys.exit(0)
 
 # now generate non-Gaussian maps
 if (SIMStart>0):

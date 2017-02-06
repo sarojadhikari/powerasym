@@ -15,7 +15,7 @@ we can include only the C_1 term to study the dipole modulations.
 """
 import numpy as np
 import healpy as hp
-from cmbutils import get_hem_Cls, Ais, AistoA, get_dipole, get_A0
+from .cmbutils import get_hem_Cls, Ais, AistoA, get_dipole, get_A0
 from scipy.special import gamma, gammaln    #gammaln useful for large l, gamma(l) is too large
 
 class SachsWolfeMap(object):
@@ -64,20 +64,22 @@ class SachsWolfeMap(object):
         self.gausmap1=hp.alm2map(self.gausalm1, nside=self.NSIDE) # does not include the monopole
 
     def save_gaus_map(self, mapN):
-        print "writing "+str(mapN)
+        print ("writing "+str(mapN))
         hp.write_alm(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausalm0)
         #hp.write_map(self.mapsdir+"gmap_"+str(mapN)+".fits", self.gausmap)
 
     def generate_fnl_maps(self, phisq0=0., phisq1=0.):
-        self.fnlmaps0=[]
+        #self.fnlmaps0=[]
         self.fnlmaps1=[]
-
-        sqmap0=np.power(self.gausmap0, 2.0)
+        
+        #sqmap0=np.power(self.gausmap0, 2.0)
         sqmap1=np.power(self.gausmap1, 2.0)
 
         for i in range(self.Nfnls):
-            self.fnlmaps0.append(self.gausmap0+3.*self.fnls[i]*(sqmap0-phisq0))
+            #self.fnlmaps0.append(self.gausmap0+3.*self.fnls[i]*(sqmap0-phisq0))
             self.fnlmaps1.append(self.gausmap1+3.*self.fnls[i]*(sqmap1-phisq1))
+            
+        self.fnlalm1 = hp.map2alm(self.fnlmaps1[0])
 
     def get_SWCls(self, Aphi=7.94E-10, ns=0.965):
         """
@@ -118,15 +120,15 @@ class SachsWolfeMap(object):
             self.gausmp=hp.remove_monopole(self.gausmap0, fitval=True)[1]
             self.gausdipole=get_dipole(self.gausmap1)
 
-        if (self.fnlmaps0!=None):
+        if (self.fnlmaps1!=None):
             self.fnlCls0=[]; self.fnlCls1=[]; self.fnlA0=[]; self.fnlAi=[]; self.fnlAi2=[]
             self.fnlmp=[]; self.fnldipole=[]; self.fnlA=[]; self.fnlA2=[]
 
             for i in range(self.Nfnls):
-                self.fnlCls0.append(hp.anafast(self.fnlmaps0[i], nspec=self.lmax))
+                #self.fnlCls0.append(hp.anafast(self.fnlmaps0[i], nspec=self.lmax))
                 self.fnlCls1.append(hp.anafast(self.fnlmaps1[i], nspec=self.lmax))
-                self.fnlA0.append(get_A0(self.fnlCls0[i][1:], inpCls[1:]))
+                #self.fnlA0.append(get_A0(self.fnlCls0[i][1:], inpCls[1:]))
                 self.fnlAi.append(Ais(self.fnlmaps1[i], self.lmax)); self.fnlA.append(AistoA(self.fnlAi[i]))
-                self.fnlAi2.append(Ais(self.fnlmaps0[i], self.lmax)); self.fnlA2.append(AistoA(self.fnlAi2[i]))
-                self.fnlmp.append(hp.remove_monopole(self.fnlmaps0[i], fitval=True)[1])
+                #self.fnlAi2.append(Ais(self.fnlmaps0[i], self.lmax)); self.fnlA2.append(AistoA(self.fnlAi2[i]))
+                #self.fnlmp.append(hp.remove_monopole(self.fnlmaps0[i], fitval=True)[1])
                 self.fnldipole.append(get_dipole(self.fnlmaps1[i]))

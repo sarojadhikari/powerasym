@@ -77,9 +77,9 @@ def get_dipole(map1):
     return ddir
 
 def cmb_parity(Cls, lmax=28):
-    n_plus = np.sum(np.array([(1+(-1)**l) for l in range(2, lmax)]))
-    n_minus = np.sum(np.array([(1-(-1)**l) for l in range(2, lmax)]))
-    p_plus = np.sum(np.array([(1+(-1)**l)*l*(l+1)/(4.*np.pi)*Cls[l] for l in range(2, lmax)]))/n_plus
-    p_minus= np.sum(np.array([(1-(-1)**l)*l*(l+1)/(4.*np.pi)*Cls[l] for l in range(2, lmax)]))/n_minus
+    n_plus = np.sum(np.array([(1+(-1)**l) for l in range(2, lmax+1)]))
+    n_minus = np.sum(np.array([(1-(-1)**l) for l in range(2, lmax+1)]))
+    p_plus = np.sum(np.array([(1+(-1)**l)*l*(l+1)/(4.*np.pi)*Cls[l] for l in range(2, lmax+1)]))/n_plus
+    p_minus= np.sum(np.array([(1-(-1)**l)*l*(l+1)/(4.*np.pi)*Cls[l] for l in range(2, lmax+1)]))/n_minus
     #print (p_plus, p_minus)
     return p_minus/p_plus

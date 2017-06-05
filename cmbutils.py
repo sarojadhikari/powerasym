@@ -69,8 +69,7 @@ def Ais(map1, LMAX, deg=90.):
     dirs=[dir1, dir2, dir3]
     A123=[]
     for direction in dirs:
-        Clsp, Clsm = get_hem_Cls(map1, direction, LMAX, deg);
-        A123.append(weightedA(Clsp[2:], Clsm[2:]))
+        A123.append(A_wrt_dir(map1, direction, LMAX, deg))
 
     return A123
 

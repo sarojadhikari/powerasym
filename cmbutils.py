@@ -37,8 +37,8 @@ def get_A0(Clrealization, Clinput):
         print ("different number of Cl values in the two spectra. Please check!")
 
     # also do a weighted average
-    total=np.sum([2*i+1 for i in range(1, NCls1)])
-    A0sum=np.sum([(2*i+1)*(Clrealization[i]/Clinput[i]-1) for i in range(1, NCls1)])
+    total=np.sum([2*i+1 for i in range(2, NCls1)])
+    A0sum=np.sum([(2*i+1)*(Clrealization[i]/Clinput[i]-1) for i in range(2, NCls1)])
     return A0sum/total
 
 def weightedA(Clp, Cln, al=0):
@@ -48,6 +48,16 @@ def weightedA(Clp, Cln, al=0):
     total=np.sum([2*al[i]+1 for i in ls])
     num=np.sum([(2*al[i]+1)*(Clp[i]-Cln[i])/(Clp[i]+Cln[i]) for i in ls])
     return num/total
+
+def A_wrt_dir(map1, direction, LMAX, deg=90.):
+    """
+    get the Cl power asymmetry wrt to the direction specified
+    """
+    if len(direction)==2:
+        direction = hp.dir2vec(direction[0], direction[1], lonlat=True)
+        
+    Clsp, Clsm = get_hem_Cls(map1, direction, LMAX, deg)
+    return weightedA(Clsp[2:], Clsm[2:])
 
 def Ais(map1, LMAX, deg=90.):
     """
@@ -60,7 +70,7 @@ def Ais(map1, LMAX, deg=90.):
     A123=[]
     for direction in dirs:
         Clsp, Clsm = get_hem_Cls(map1, direction, LMAX, deg);
-        A123.append(weightedA(Clsp[2:],Clsm[2:]))
+        A123.append(weightedA(Clsp[2:], Clsm[2:]))
 
     return A123
 

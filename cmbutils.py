@@ -17,7 +17,7 @@ def get_hem_Cls(skymap, direction, LMAX=256, deg=90.):
     #skymap=hp.remove_monopole(skymap)
     map1=hp.ma(skymap);
     map1.mask=maskp;
-    Clsp=hp.anafast(map1, lmax=LMAX);
+    Clsp=hp.anafast(map1, lmax=LMAX*2.0);
     if (deg<90.):
         maskm=np.array([0.]*NPIX)
         disc=hp.query_disc(nside=NSIDE, vec=-direction, radius=0.0174532925*deg);
@@ -26,9 +26,9 @@ def get_hem_Cls(skymap, direction, LMAX=256, deg=90.):
     else:
         map1.mask=np.logical_not(maskp);
 
-    Clsm=hp.anafast(map1, lmax=LMAX);
+    Clsm=hp.anafast(map1, lmax=LMAX*2.0);
 
-    return [Clsp, Clsm]
+    return [Clsp[0:LMAX+1], Clsm[0:LMAX+1]]
 
 def get_A0(Clrealization, Clinput):
     NCls1=len(Clrealization)
@@ -49,7 +49,7 @@ def weightedA(Clp, Cln, al=0):
     num=np.sum([(2*al[i]+1)*(Clp[i]-Cln[i])/(Clp[i]+Cln[i]) for i in ls])
     return num/total
 
-def A_wrt_dir(map1, direction, LMAX, deg=90.):
+def A_wrt_dir(map1, direction, LMAX, LMIN=2, deg=90.):
     """
     get the Cl power asymmetry wrt to the direction specified
     """
@@ -57,9 +57,9 @@ def A_wrt_dir(map1, direction, LMAX, deg=90.):
         direction = hp.dir2vec(direction[0], direction[1], lonlat=True)
         
     Clsp, Clsm = get_hem_Cls(map1, direction, LMAX, deg)
-    return weightedA(Clsp[2:], Clsm[2:])
+    return weightedA(Clsp[LMIN:], Clsm[LMIN:])
 
-def Ais(map1, LMAX, deg=90.):
+def Ais(map1, LMAX, LMIN=2, deg=90.):
     """
     get the Cl power asymmetry in a particular direction
     """
@@ -69,7 +69,7 @@ def Ais(map1, LMAX, deg=90.):
     dirs=[dir1, dir2, dir3]
     A123=[]
     for direction in dirs:
-        A123.append(A_wrt_dir(map1, direction, LMAX, deg))
+        A123.append(A_wrt_dir(map1, direction, LMAX, LMIN, deg))
 
     return A123
 
@@ -92,3 +92,46 @@ def cmb_parity(Cls, lmax=28):
     p_minus= np.sum(np.array([(1-(-1)**l)*l*(l+1)/(4.*np.pi)*Cls[l] for l in range(2, lmax+1)]))/n_minus
     #print (p_plus, p_minus)
     return p_minus/p_plus
+
+def _Alm(l, m):
+    num = (l+1)**2.0 - m * m
+    den = (2*l+1)*(2*l+3)
+    return np.sqrt(num/den)
+
+def _Blm(l, m):
+    num = (l+m+1)*(l+m+2)
+    den = 2*(2*l+1)*(2*l+3)
+    return np.sqrt(num/den)
+
+def DeltaXM(alms, Cllist, lmin=2, lmax=100):
+    """
+    given the alms, and specified Cls, estimate the 
+    dipole modulation parameters DeltaX0, DeltaX(+-1) and return them
+    """
+    num0 = 0.; num1 = 0.;
+    den = 0.
+    alm_lmax = hp.Alm.getlmax(len(alms))
+    
+    for l in range(lmin, lmax):
+        Cll1inv = 1./(Cllist[l]*Cllist[l+1])
+        dCl = (Cllist[l] + Cllist[l+1])*2
+        den = den + dCl**2.0*(l+1)*Cll1inv
+        for m in range(0, l+1):
+            alm = alms[hp.Alm.getidx(lmax=alm_lmax, l=l, m=m)]
+            alplus1m = alms[hp.Alm.getidx(lmax=alm_lmax, l=l+1, m=m)]
+            al1m1 = alms[hp.Alm.getidx(lmax=alm_lmax, l=l+1, m=m+1)]
+            common_factor = 6. * dCl * alm.conjugate() * Cll1inv
+            num0 = num0 + common_factor * _Alm(l,m) * alplus1m
+            num1 = num1 + common_factor * _Blm(l,m) * al1m1
+            
+        for m in range(-l, 0):
+            alm = (-1)**(-m)*alms[hp.Alm.getidx(lmax=alm_lmax, l=l, m=-m)].conjugate()
+            alplus1m = (-1)**(-m)*alms[hp.Alm.getidx(lmax=alm_lmax, l=l+1, m=-m)].conjugate()
+            al1m1 = (-1)**(-m+1)*alms[hp.Alm.getidx(lmax=alm_lmax, l=l+1, m=-m+1)]
+            common_factor = 6. * dCl * alm.conjugate() * Cll1inv
+            num0 = num0 + common_factor * _Alm(l,m) * alplus1m
+            num1 = num1 + common_factor * _Blm(l,m) * al1m1
+            
+    return num0/den, num1/den
+            
+    

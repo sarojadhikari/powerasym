@@ -93,6 +93,20 @@ def cmb_parity(Cls, lmax=28):
     #print (p_plus, p_minus)
     return p_minus/p_plus
 
+"""
+Dipole modulation power asymmetry estimators and other utilities below
+"""
+
+def sigma_X(Cllist, lmin=2, lmax=100):
+    """
+    the cosmic variance of the modulation amplitude estimator
+    from 1704.03143
+    """
+    sxarray = np.array([(l+1)*4*(Cllist[l]+Cllist[l+1])**2.0/Cllist[l]/Cllist[l+1]
+                        for l in range(lmin, lmax)])
+    sigmaXsq = 12./(np.sum(sxarray))
+    return np.sqrt(sigmaXsq)
+
 def _Alm(l, m):
     num = (l+1)**2.0 - m * m
     den = (2*l+1)*(2*l+3)
@@ -105,8 +119,11 @@ def _Blm(l, m):
 
 def DeltaXM(alms, Cllist, lmin=2, lmax=100):
     """
-    given the alms, and specified Cls, estimate the 
+    given the alms, and theory Cls, estimate the 
     dipole modulation parameters DeltaX0, DeltaX(+-1) and return them
+    
+    assumptions: full-sky, noiseless CMB, small modulation (linear order)
+    See: Planck 2015 isotropy paper (1506.07135, Appendix C) or 1512.02618
     """
     num0 = 0.; num1 = 0.;
     den = 0.
@@ -134,4 +151,22 @@ def DeltaXM(alms, Cllist, lmin=2, lmax=100):
             
     return num0/den, num1/den
             
+def Athetaphi(alms, Cllist, lmin=2, lmax=100):
+    """
+    use this function to obtain the
+        * Amplitude A of dipole modulation
+        * (theta, phi) direction of the modulation
+        
+    the inputs are
+        * alms - the alms from the input CMB (T/E etc) map
+        * Cllist - the theory Cls -- Cl(TT) Cl(EE) etc
+        * (lmin, lmax) the multipole range to use for calculating
+          (A, theta, phi)
+    """
     
+    DX0, DX1 = DeltaXM(alms, Cllist, lmin, lmax)
+    A = np.sqrt(DX0.conjugate()*DX0+2.*DX1.conjugate()*DX1).real
+    theta = np.arccos(DX0.real/A)
+    phi = np.arctan2(DX1.imag, DX1.real)
+    
+    return A, theta, phi
